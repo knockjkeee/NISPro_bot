@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.time.Instant;
+import javax.validation.constraints.NotEmpty;
 
 @Data
 @NoArgsConstructor
@@ -18,21 +18,27 @@ public class TelegramBot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
+//    @NotEmpty
     private Long id;
 
     @Column(name = "company", nullable = false, length = 100)
+    @NotEmpty
     private String company;
 
     @Column(name = "url", nullable = false, length = 100)
+    @NotEmpty
     private String url;
 
     @Column(name = "login", nullable = false, length = 100)
+    @NotEmpty
     private String login;
 
     @Column(name = "password", nullable = false, length = 100)
+    @NotEmpty
     private String password;
 
     @Column(name = "queue_id", nullable = false, length = 100)
+    @NotEmpty
     private String queueId;
 
 }
