@@ -6,6 +6,8 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
@@ -51,16 +53,25 @@ public class RegistrationForm extends FormLayout {
         close.addClickShortcut(Key.ESCAPE);
 
         save.addClickListener(e -> validateAndSave());
-        delete.addClickListener(e -> fireEvent(new DeleteEvent(this, telegramEntity)));
+        delete.addClickListener(e -> {
+            fireEvent(new DeleteEvent(this, telegramEntity));
+            notification();
+        });
         close.addClickListener(e -> fireEvent(new CloseEvent(this)));
 
         return new HorizontalLayout(save, delete, close);
+    }
+
+    private void notification() {
+        Notification notification = Notification.show("Готово!", 1000, Notification.Position.TOP_CENTER);
+        notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
     }
 
     private void validateAndSave() {
         try {
             binder.writeBean(telegramEntity);
             fireEvent(new SaveEvent(this, telegramEntity));
+            notification();
         } catch (ValidationException e) {
             e.printStackTrace();
         }
