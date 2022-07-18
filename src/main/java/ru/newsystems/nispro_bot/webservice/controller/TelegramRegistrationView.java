@@ -43,7 +43,7 @@ public class TelegramRegistrationView extends VerticalLayout {
 
     private void configureForm() {
         registrationForm = new RegistrationForm();
-        registrationForm.setWidth("30em");
+        registrationForm.setWidth("45em");
         registrationForm.addListener(RegistrationForm.SaveEvent.class, this::saveContact);
         registrationForm.addListener(RegistrationForm.DeleteEvent.class, this::deleteContact);
         registrationForm.addListener(RegistrationForm.CloseEvent.class, e -> closeEditor());
