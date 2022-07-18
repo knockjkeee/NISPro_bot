@@ -36,8 +36,7 @@ import static ru.newsystems.nispro_bot.base.utils.NumberUtil.getIdByTicketNumber
 import static ru.newsystems.nispro_bot.telegram.utils.Action.getMessage;
 import static ru.newsystems.nispro_bot.telegram.utils.Messages.prepareTextArticle;
 import static ru.newsystems.nispro_bot.telegram.utils.Messages.prepareTextTicket;
-import static ru.newsystems.nispro_bot.telegram.utils.Notification.sendErrorMsg;
-import static ru.newsystems.nispro_bot.telegram.utils.Notification.sendExceptionMsg;
+import static ru.newsystems.nispro_bot.telegram.utils.Notification.*;
 
 @Component
 public class MessageUpdateHandler implements UpdateHandler {
@@ -78,16 +77,21 @@ public class MessageUpdateHandler implements UpdateHandler {
         String text = update.getMessage().getText();
         long tk = getIdByTicketNumber(text);
         Optional<TicketSearchDTO> ticketSearch = tk
-                != 0 ? restNISService.getTicketOperationSearch(List.of(tk)) : Optional.empty();
+                != 0 ? restNISService.getTicketOperationSearch(List.of(tk), update.getMessage().getChatId()) : Optional.empty();
         if (ticketSearch.isPresent()) {
             List<Long> ticketsId = ticketSearch.get().getTicketIDs();
-            Optional<TicketGetDTO> ticket = restNISService.getTicketOperationGet(ticketsId);
+            Optional<TicketGetDTO> ticket = restNISService.getTicketOperationGet(ticketsId, update.getMessage().getChatId());
             if (ticket.isPresent()) {
                 if (ticket.get().getError() == null) {
                     sendTicketTextMsg(update, ticket.get().getTickets().get(0));
                     updateLocalRepo(update, ticket);
                     return true;
                 } else {
+                    if (ticket.get().getError() != null &&
+                            ticket.get().getError().getErrorCode().equals("100500")) {
+                        missingRegistration(update.getMessage(), bot);
+                        return false;
+                    }
                     sendErrorMsg(bot, update, text, ticket.get().getError());
                     return false;
                 }
@@ -96,6 +100,12 @@ public class MessageUpdateHandler implements UpdateHandler {
                 return false;
             }
         } else {
+            if (ticketSearch.get().getError() != null &&
+                    ticketSearch.get().getError().getErrorCode().equals("100500")) {
+                missingRegistration(update.getMessage(), bot);
+                return false;
+            }
+
             for (MessageHandler messageHandler : messageHandlers) {
                 try {
                     if (messageHandler.handleUpdate(update)) {

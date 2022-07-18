@@ -28,25 +28,35 @@ public class Action {
     }
 
     public static void sendNewComment(Update update, RequestDataDTO req, RestNISService restNISService, VirtaBot bot) throws TelegramApiException {
-        Optional<TicketUpdateCreateDTO> ticketOperationUpdate = restNISService.getTicketOperationUpdate(req);
+        Optional<TicketUpdateCreateDTO> ticketOperationUpdate = restNISService.getTicketOperationUpdate(req, update.getMessage().getChatId());
         if (ticketOperationUpdate.isPresent() && ticketOperationUpdate.get().getError() == null) {
             resultOperationToChat(update, bot, true);
         } else {
-            sendErrorMsg(bot, update, update.getMessage().getReplyToMessage().getText(), ticketOperationUpdate
-                    .get()
-                    .getError());
+            if (ticketOperationUpdate.get().getError() != null &&
+                    ticketOperationUpdate.get().getError().getErrorCode().equals("100500")) {
+                missingRegistration(update.getMessage(), bot);
+            } else {
+                sendErrorMsg(bot, update, update.getMessage().getReplyToMessage().getText(), ticketOperationUpdate
+                        .get()
+                        .getError());
+            }
         }
     }
 
     public static void sendCreateTicket(Update update, RequestDataDTO req, RestNISService restNISService, VirtaBot bot) throws TelegramApiException {
-        Optional<TicketUpdateCreateDTO> ticketOperationUpdate = restNISService.getTicketOperationCreate(req);
+        Optional<TicketUpdateCreateDTO> ticketOperationUpdate = restNISService.getTicketOperationCreate(req, update.getMessage().getChatId());
         if (ticketOperationUpdate.isPresent() && ticketOperationUpdate.get().getError() == null) {
             resultOperationToChat(update, bot, true);
             receiveReqNum(update, bot, ticketOperationUpdate.get().getTicketNumber());
         } else {
-            sendErrorMsg(bot, update, update.getMessage().getReplyToMessage().getText(), ticketOperationUpdate
-                    .get()
-                    .getError());
+            if (ticketOperationUpdate.get().getError() != null &&
+                    ticketOperationUpdate.get().getError().getErrorCode().equals("100500")) {
+                missingRegistration(update.getMessage(), bot);
+            } else {
+                sendErrorMsg(bot, update, update.getMessage().getReplyToMessage().getText(), ticketOperationUpdate
+                        .get()
+                        .getError());
+            }
         }
     }
 }

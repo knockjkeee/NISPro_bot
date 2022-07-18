@@ -14,18 +14,19 @@ import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
-import ru.newsystems.nispro_bot.base.model.db.TelegramBot;
+import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
 
 public class RegistrationForm extends FormLayout {
-    private TelegramBot telegramEntity;
+    private TelegramBotRegistration telegramBotRegistration;
 
     TextField company = new TextField("Company");
+    TextField idTelegram = new TextField("Id Telegram");
     TextField url = new TextField("Url");
     TextField login = new TextField("Login");
     TextField password = new TextField("Password");
     TextField queueID = new TextField("QueueID");
 
-    Binder<TelegramBot> binder = new BeanValidationBinder<>(TelegramBot.class);
+    Binder<TelegramBotRegistration> binder = new BeanValidationBinder<>(TelegramBotRegistration.class);
 
     Button save = new Button("Save");
     Button delete = new Button("Delete");
@@ -36,12 +37,12 @@ public class RegistrationForm extends FormLayout {
         addClassName("registration-form");
         //Validation Rules
         binder.bindInstanceFields(this);
-        add(company, url, login, password, queueID, createButtonsLayout());
+        add(company,idTelegram, url, login, password, queueID, createButtonsLayout());
     }
 
-    public void setTelegramEntity(TelegramBot telegramEntity) {
-        this.telegramEntity = telegramEntity;
-        binder.readBean(telegramEntity);
+    public void setTelegramBotRegistration(TelegramBotRegistration telegramBotRegistration) {
+        this.telegramBotRegistration = telegramBotRegistration;
+        binder.readBean(telegramBotRegistration);
     }
 
     private HorizontalLayout createButtonsLayout() {
@@ -54,7 +55,7 @@ public class RegistrationForm extends FormLayout {
 
         save.addClickListener(e -> validateAndSave());
         delete.addClickListener(e -> {
-            fireEvent(new DeleteEvent(this, telegramEntity));
+            fireEvent(new DeleteEvent(this, telegramBotRegistration));
             notification();
         });
         close.addClickListener(e -> fireEvent(new CloseEvent(this)));
@@ -69,36 +70,35 @@ public class RegistrationForm extends FormLayout {
 
     private void validateAndSave() {
         try {
-            binder.writeBean(telegramEntity);
-            fireEvent(new SaveEvent(this, telegramEntity));
+            binder.writeBean(telegramBotRegistration);
+            fireEvent(new SaveEvent(this, telegramBotRegistration));
             notification();
         } catch (ValidationException e) {
             e.printStackTrace();
         }
     }
 
-
     public static abstract class ContactFormEvent extends ComponentEvent<RegistrationForm> {
-        private TelegramBot telegramEntity;
+        private TelegramBotRegistration telegramEntity;
 
-        protected ContactFormEvent(RegistrationForm source, TelegramBot telegramEntity) {
+        protected ContactFormEvent(RegistrationForm source, TelegramBotRegistration telegramEntity) {
             super(source, false);
             this.telegramEntity = telegramEntity;
         }
 
-        public TelegramBot getTelegramEntity() {
+        public TelegramBotRegistration getTelegramEntity() {
             return telegramEntity;
         }
     }
 
     public static class SaveEvent extends ContactFormEvent {
-        SaveEvent(RegistrationForm source, TelegramBot telegramEntity) {
+        SaveEvent(RegistrationForm source, TelegramBotRegistration telegramEntity) {
             super(source, telegramEntity);
         }
     }
 
     public static class DeleteEvent extends ContactFormEvent {
-        DeleteEvent(RegistrationForm source, TelegramBot telegramEntity) {
+        DeleteEvent(RegistrationForm source, TelegramBotRegistration telegramEntity) {
             super(source, telegramEntity);
         }
 

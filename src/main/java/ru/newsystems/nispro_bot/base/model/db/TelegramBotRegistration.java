@@ -14,7 +14,7 @@ import javax.validation.constraints.NotEmpty;
 @Entity
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Table(name = "telegram_bot")
-public class TelegramBot {
+public class TelegramBotRegistration {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -24,6 +24,10 @@ public class TelegramBot {
     @Column(name = "company", nullable = false, length = 100)
     @NotEmpty
     private String company;
+
+    @Column(name = "id_telegram", nullable = false, length = 100)
+    @NotEmpty
+    private String idTelegram;
 
     @Column(name = "url", nullable = false, length = 100)
     @NotEmpty

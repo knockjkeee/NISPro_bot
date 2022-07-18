@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static ru.newsystems.nispro_bot.telegram.utils.Button.prepareButtonsFromTickets;
+import static ru.newsystems.nispro_bot.telegram.utils.Notification.missingRegistration;
 import static ru.newsystems.nispro_bot.telegram.utils.Notification.resultOperationToChat;
 
 
@@ -38,38 +39,46 @@ public class MyTicketsCommandHandler implements CommandHandler {
 
     @Override
     public void handleCommand(Message message, String text) throws TelegramApiException {
-        Optional<TicketSearchDTO> ticketOperationSearch = restNISService.getTicketOperationSearch();
+        Optional<TicketSearchDTO> ticketOperationSearch = restNISService.getTicketOperationSearch(message.getChatId());
 
-        if (ticketOperationSearch.isPresent()
-                && ticketOperationSearch.get().getTicketIDs() != null
-                && ticketOperationSearch.get().getTicketIDs().size() > 0) {
+        if (ticketOperationSearch.isPresent() && ticketOperationSearch.get().getTicketIDs() != null &&
+                ticketOperationSearch.get().getTicketIDs().size() > 0) {
 
-            bot.execute(SendChatAction
-                    .builder()
+            bot.execute(SendChatAction.builder()
                     .chatId(String.valueOf(message.getChatId()))
                     .action(ActionType.TYPING.toString())
                     .build());
 
             List<Long> ticketIDs = ticketOperationSearch.get().getTicketIDs();
-            Optional<TicketGetDTO> ticketOperationGet = restNISService.getTicketOperationGet(ticketIDs);
-            TicketGetDTO value = ticketOperationGet.get();
-            cache.update(message.getChatId(), value);
-            List<List<InlineKeyboardButton>> inlineKeyboard = prepareButtonsFromTickets(value.getTickets(), 1, value
-                    .getTickets()
-                    .size());
+            Optional<TicketGetDTO> ticketOperationGet =
+                    restNISService.getTicketOperationGet(ticketIDs, message.getChatId());
+            if (ticketOperationGet.get().getError() != null &&
+                    ticketOperationGet.get().getError().getErrorCode().equals("100500")) {
+                missingRegistration(message, bot);
 
-            bot.execute(SendMessage
-                    .builder()
-                    .chatId(String.valueOf(message.getChatId()))
-                    .text("<pre>Количество открытых заявок: <b>" + ticketIDs.size() + "</b></pre>")
-                    .parseMode(ParseMode.HTML)
-                    .protectContent(true)
-                    .replyToMessageId(message.getMessageId())
-                    .replyMarkup(InlineKeyboardMarkup.builder().keyboard(inlineKeyboard).build())
-                    .build());
+            } else {
+                TicketGetDTO value = ticketOperationGet.get();
+                cache.update(message.getChatId(), value);
+                List<List<InlineKeyboardButton>> inlineKeyboard =
+                        prepareButtonsFromTickets(value.getTickets(), 1, value.getTickets().size());
+
+                bot.execute(SendMessage.builder()
+                        .chatId(String.valueOf(message.getChatId()))
+                        .text("<pre>Количество открытых заявок: <b>" + ticketIDs.size() + "</b></pre>")
+                        .parseMode(ParseMode.HTML)
+                        .protectContent(true)
+                        .replyToMessageId(message.getMessageId())
+                        .replyMarkup(InlineKeyboardMarkup.builder().keyboard(inlineKeyboard).build())
+                        .build());
+            }
 
         } else {
-            resultOperationToChat(message, bot, false);
+            if (ticketOperationSearch.get().getError() != null &&
+                    ticketOperationSearch.get().getError().getErrorCode().equals("100500")) {
+                missingRegistration(message, bot);
+            } else {
+                resultOperationToChat(message, bot, false);
+            }
         }
     }
 

@@ -6,17 +6,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import ru.newsystems.nispro_bot.base.model.domain.Article;
+import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
+import ru.newsystems.nispro_bot.base.model.domain.Error;
 import ru.newsystems.nispro_bot.base.model.dto.domain.RequestDataDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketGetDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketSearchDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketUpdateCreateDTO;
+import ru.newsystems.nispro_bot.webservice.services.TelegramBotRegistrationService;
 
 import java.util.*;
 
 @Service
 public class RestNISService {
     private final RestTemplate restTemplate;
+
+    private final TelegramBotRegistrationService service;
+
     @Value("${nis.pro.url}")
     private String baseUrl;
     @Value("${nis.pro.path}")
@@ -26,13 +31,24 @@ public class RestNISService {
     @Value("${nis.pro.password}")
     private String password;
 
-    public RestNISService(RestTemplate restTemplate) {
+    public RestNISService(RestTemplate restTemplate, TelegramBotRegistrationService service) {
         this.restTemplate = restTemplate;
+        this.service = service;
     }
 
-    public Optional<TicketGetDTO> getTicketOperationGet(List<Long> id) {
+    public Optional<TicketGetDTO> getTicketOperationGet(List<Long> id, Long msgId) {
 //    String url = "http://192.168.246.218/otrs/nph-genericinterface.pl/Webservice/Ticket/TicketGet?UserLogin=PRa&Password=pr";
-        String urlGet = getUrl("TicketGet?UserLogin=");
+
+        TelegramBotRegistration registration = registration(msgId);
+        if (registration.getCompany() == null) {
+            TicketGetDTO temp = new TicketGetDTO();
+            Error error = new Error();
+            error.setErrorCode("100500");
+            temp.setError(error);
+            return Optional.of(temp);
+        }
+
+        String urlGet = getUrl("TicketGet?UserLogin=", registration);
         HttpEntity<MultiValueMap<String, Object>> requestEntity = getRequestHeaderTickerGet(id);
         ResponseEntity<TicketGetDTO> response = restTemplate.exchange(urlGet, HttpMethod.POST, requestEntity, TicketGetDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
@@ -42,8 +58,18 @@ public class RestNISService {
         }
     }
 
-    public Optional<TicketSearchDTO> getTicketOperationSearch(List<Long> listTicketNumbers) {
-        String urlSearch = getUrl("TicketSearch?UserLogin=");
+    public Optional<TicketSearchDTO> getTicketOperationSearch(List<Long> listTicketNumbers, Long msgId) {
+        TelegramBotRegistration registration = registration(msgId);
+        if (registration.getCompany() == null) {
+            TicketSearchDTO temp = new TicketSearchDTO();
+            Error error = new Error();
+            error.setErrorCode("100500");
+            temp.setError(error);
+            return Optional.of(temp);
+        }
+
+
+        String urlSearch = getUrl("TicketSearch?UserLogin=", registration);
         HttpEntity<MultiValueMap<String, Object>> requestEntity = getRequestHeaderTickerSearch(listTicketNumbers);
         ResponseEntity<TicketSearchDTO> response = restTemplate.exchange(urlSearch, HttpMethod.POST, requestEntity, TicketSearchDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
@@ -53,8 +79,18 @@ public class RestNISService {
         }
     }
 
-    public Optional<TicketUpdateCreateDTO> getTicketOperationUpdate(RequestDataDTO data) {
-        String urlUpdate = getUrl("TicketUpdate?UserLogin=");
+    public Optional<TicketUpdateCreateDTO> getTicketOperationUpdate(RequestDataDTO data, Long msgId) {
+        TelegramBotRegistration registration = registration(msgId);
+        if (registration.getCompany() == null) {
+            TicketUpdateCreateDTO temp = new TicketUpdateCreateDTO();
+            Error error = new Error();
+            error.setErrorCode("100500");
+            temp.setError(error);
+            return Optional.of(temp);
+        }
+
+
+        String urlUpdate = getUrl("TicketUpdate?UserLogin=", registration);
         HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerUpdate(data);
         ResponseEntity<TicketUpdateCreateDTO> response = restTemplate.exchange(urlUpdate, HttpMethod.POST, requestEntity, TicketUpdateCreateDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
@@ -64,9 +100,18 @@ public class RestNISService {
         }
     }
 
-    public Optional<TicketUpdateCreateDTO> getTicketOperationCreate(RequestDataDTO data) {
-        String urlCreate = getUrl("TicketCreate?UserLogin=");
-        HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerCreate(data);
+    public Optional<TicketUpdateCreateDTO> getTicketOperationCreate(RequestDataDTO data, Long msgId) {
+        TelegramBotRegistration registration = registration(msgId);
+        if (registration.getCompany() == null) {
+            TicketUpdateCreateDTO temp = new TicketUpdateCreateDTO();
+            Error error = new Error();
+            error.setErrorCode("100500");
+            temp.setError(error);
+            return Optional.of(temp);
+        }
+
+        String urlCreate = getUrl("TicketCreate?UserLogin=", registration);
+        HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerCreate(data, registration.getQueueId());
         ResponseEntity<TicketUpdateCreateDTO> response = restTemplate.exchange(urlCreate, HttpMethod.POST, requestEntity, TicketUpdateCreateDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
             return Optional.ofNullable(response.getBody());
@@ -75,18 +120,17 @@ public class RestNISService {
         }
     }
 
-    private String getReq(Article article) {
-        StringBuilder res = new StringBuilder();
-        res.append("{");
-        res.append("\"ContentType\":\"text/plain; charset=utf8\",");
-        res.append("\"Subject\":\"").append(article.getSubject()).append("\",");
-        res.append("\"Body\":\"").append(article.getBody()).append("\"}");
-//        res.append("\"To\":").append(article.getTo()).append("}");
-        return res.toString();
-    }
+    public Optional<TicketSearchDTO> getTicketOperationSearch(Long msgId) {
+        TelegramBotRegistration registration = registration(msgId);
+        if (registration.getCompany() == null) {
+            TicketSearchDTO temp = new TicketSearchDTO();
+            Error error = new Error();
+            error.setErrorCode("100500");
+            temp.setError(error);
+            return Optional.of(temp);
+        }
 
-    public Optional<TicketSearchDTO> getTicketOperationSearch() {
-        String url = getUrl("TicketSearch?UserLogin=");
+        String url = getUrl("TicketSearch?UserLogin=", registration);
         HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerSearch();
         ResponseEntity<TicketSearchDTO> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, TicketSearchDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
@@ -133,12 +177,12 @@ public class RestNISService {
     }
 
 
-    private  HttpEntity<Map<String, Object>> getRequestHeaderTickerCreate(RequestDataDTO data) {
+    private  HttpEntity<Map<String, Object>> getRequestHeaderTickerCreate(RequestDataDTO data, String queueID) {
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> arc = new HashMap<>();
         Map<String, Object> ticket = new HashMap<>();
 
-        ticket.put("QueueID", 7);
+        ticket.put("QueueID", queueID);
         ticket.put("Priority", "3 normal");
         ticket.put("CustomerUser", "PRc");
         ticket.put("Title", "Тикет создан с помощью telegram bot");
@@ -166,7 +210,6 @@ public class RestNISService {
     }
 
 
-
     private HttpEntity<MultiValueMap<String, Object>> getRequestHeaderTickerSearch(List<Long> listTicketNumbers) {
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
         listTicketNumbers.forEach(e -> map.add("TicketNumber", e));
@@ -185,8 +228,13 @@ public class RestNISService {
         return headers;
     }
 
-    private String getUrl(String operation) {
-        return baseUrl + path + operation + login + "&Password=" + password;
+    private TelegramBotRegistration registration(Long id) {
+        return service.getByTelegramId(String.valueOf(id));
+    }
+
+
+    private String getUrl(String operation, TelegramBotRegistration registration) {
+        return registration.getUrl() + operation + registration.getLogin() + "&Password=" + registration.getPassword();
     }
 
 }
