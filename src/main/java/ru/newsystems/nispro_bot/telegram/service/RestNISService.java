@@ -12,6 +12,7 @@ import ru.newsystems.nispro_bot.base.model.dto.domain.RequestDataDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketGetDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketSearchDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketUpdateCreateDTO;
+import ru.newsystems.nispro_bot.base.model.state.ErrorState;
 import ru.newsystems.nispro_bot.webservice.services.TelegramBotRegistrationService;
 
 import java.util.*;
@@ -37,17 +38,14 @@ public class RestNISService {
     }
 
     public Optional<TicketGetDTO> getTicketOperationGet(List<Long> id, Long msgId) {
-//    String url = "http://192.168.246.218/otrs/nph-genericinterface.pl/Webservice/Ticket/TicketGet?UserLogin=PRa&Password=pr";
-
         TelegramBotRegistration registration = registration(msgId);
         if (registration.getCompany() == null) {
             TicketGetDTO temp = new TicketGetDTO();
             Error error = new Error();
-            error.setErrorCode("100500");
+            error.setErrorCode(ErrorState.NOT_AUTHORIZED.getCode());
             temp.setError(error);
             return Optional.of(temp);
         }
-
         String urlGet = getUrl("TicketGet?UserLogin=", registration);
         HttpEntity<MultiValueMap<String, Object>> requestEntity = getRequestHeaderTickerGet(id);
         ResponseEntity<TicketGetDTO> response = restTemplate.exchange(urlGet, HttpMethod.POST, requestEntity, TicketGetDTO.class);
@@ -63,12 +61,10 @@ public class RestNISService {
         if (registration.getCompany() == null) {
             TicketSearchDTO temp = new TicketSearchDTO();
             Error error = new Error();
-            error.setErrorCode("100500");
+            error.setErrorCode(ErrorState.NOT_AUTHORIZED.getCode());
             temp.setError(error);
             return Optional.of(temp);
         }
-
-
         String urlSearch = getUrl("TicketSearch?UserLogin=", registration);
         HttpEntity<MultiValueMap<String, Object>> requestEntity = getRequestHeaderTickerSearch(listTicketNumbers);
         ResponseEntity<TicketSearchDTO> response = restTemplate.exchange(urlSearch, HttpMethod.POST, requestEntity, TicketSearchDTO.class);
@@ -84,12 +80,10 @@ public class RestNISService {
         if (registration.getCompany() == null) {
             TicketUpdateCreateDTO temp = new TicketUpdateCreateDTO();
             Error error = new Error();
-            error.setErrorCode("100500");
+            error.setErrorCode(ErrorState.NOT_AUTHORIZED.getCode());
             temp.setError(error);
             return Optional.of(temp);
         }
-
-
         String urlUpdate = getUrl("TicketUpdate?UserLogin=", registration);
         HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerUpdate(data);
         ResponseEntity<TicketUpdateCreateDTO> response = restTemplate.exchange(urlUpdate, HttpMethod.POST, requestEntity, TicketUpdateCreateDTO.class);
@@ -105,11 +99,10 @@ public class RestNISService {
         if (registration.getCompany() == null) {
             TicketUpdateCreateDTO temp = new TicketUpdateCreateDTO();
             Error error = new Error();
-            error.setErrorCode("100500");
+            error.setErrorCode(ErrorState.NOT_AUTHORIZED.getCode());
             temp.setError(error);
             return Optional.of(temp);
         }
-
         String urlCreate = getUrl("TicketCreate?UserLogin=", registration);
         HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerCreate(data, registration.getQueueId());
         ResponseEntity<TicketUpdateCreateDTO> response = restTemplate.exchange(urlCreate, HttpMethod.POST, requestEntity, TicketUpdateCreateDTO.class);
@@ -125,7 +118,7 @@ public class RestNISService {
         if (registration.getCompany() == null) {
             TicketSearchDTO temp = new TicketSearchDTO();
             Error error = new Error();
-            error.setErrorCode("100500");
+            error.setErrorCode(ErrorState.NOT_AUTHORIZED.getCode());
             temp.setError(error);
             return Optional.of(temp);
         }

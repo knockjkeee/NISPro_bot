@@ -13,6 +13,7 @@ import ru.newsystems.nispro_bot.base.integration.VirtaBot;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketGetDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketSearchDTO;
 import ru.newsystems.nispro_bot.base.model.state.Command;
+import ru.newsystems.nispro_bot.base.model.state.ErrorState;
 import ru.newsystems.nispro_bot.config.cache.CacheStore;
 import ru.newsystems.nispro_bot.telegram.service.RestNISService;
 
@@ -53,7 +54,7 @@ public class MyTicketsCommandHandler implements CommandHandler {
             Optional<TicketGetDTO> ticketOperationGet =
                     restNISService.getTicketOperationGet(ticketIDs, message.getChatId());
             if (ticketOperationGet.get().getError() != null &&
-                    ticketOperationGet.get().getError().getErrorCode().equals("100500")) {
+                    ticketOperationGet.get().getError().getErrorCode().equals(ErrorState.NOT_AUTHORIZED.getCode())) {
                 missingRegistration(message, bot);
 
             } else {
@@ -74,7 +75,7 @@ public class MyTicketsCommandHandler implements CommandHandler {
 
         } else {
             if (ticketOperationSearch.get().getError() != null &&
-                    ticketOperationSearch.get().getError().getErrorCode().equals("100500")) {
+                    ticketOperationSearch.get().getError().getErrorCode().equals(ErrorState.NOT_AUTHORIZED.getCode())) {
                 missingRegistration(message, bot);
             } else {
                 resultOperationToChat(message, bot, false);

@@ -21,6 +21,7 @@ import ru.newsystems.nispro_bot.base.model.dto.callback.DownloadFilesDTO;
 import ru.newsystems.nispro_bot.base.model.dto.callback.SendDataDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketGetDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketSearchDTO;
+import ru.newsystems.nispro_bot.base.model.state.ErrorState;
 import ru.newsystems.nispro_bot.base.model.state.MessageState;
 import ru.newsystems.nispro_bot.base.model.state.ReplyKeyboardButton;
 import ru.newsystems.nispro_bot.base.model.state.UpdateHandlerStage;
@@ -88,7 +89,7 @@ public class MessageUpdateHandler implements UpdateHandler {
                     return true;
                 } else {
                     if (ticket.get().getError() != null &&
-                            ticket.get().getError().getErrorCode().equals("100500")) {
+                            ticket.get().getError().getErrorCode().equals(ErrorState.NOT_AUTHORIZED.getMsg())) {
                         missingRegistration(update.getMessage(), bot);
                         return false;
                     }
@@ -101,7 +102,7 @@ public class MessageUpdateHandler implements UpdateHandler {
             }
         } else {
             if (ticketSearch.get().getError() != null &&
-                    ticketSearch.get().getError().getErrorCode().equals("100500")) {
+                    ticketSearch.get().getError().getErrorCode().equals(ErrorState.NOT_AUTHORIZED.getCode())) {
                 missingRegistration(update.getMessage(), bot);
                 return false;
             }

@@ -6,6 +6,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
 import ru.newsystems.nispro_bot.base.model.dto.domain.RequestDataDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketUpdateCreateDTO;
+import ru.newsystems.nispro_bot.base.model.state.ErrorState;
 import ru.newsystems.nispro_bot.telegram.service.RestNISService;
 
 import java.util.Optional;
@@ -33,7 +34,7 @@ public class Action {
             resultOperationToChat(update, bot, true);
         } else {
             if (ticketOperationUpdate.get().getError() != null &&
-                    ticketOperationUpdate.get().getError().getErrorCode().equals("100500")) {
+                    ticketOperationUpdate.get().getError().getErrorCode().equals(ErrorState.NOT_AUTHORIZED.getCode())) {
                 missingRegistration(update.getMessage(), bot);
             } else {
                 sendErrorMsg(bot, update, update.getMessage().getReplyToMessage().getText(), ticketOperationUpdate
@@ -50,7 +51,7 @@ public class Action {
             receiveReqNum(update, bot, ticketOperationUpdate.get().getTicketNumber());
         } else {
             if (ticketOperationUpdate.get().getError() != null &&
-                    ticketOperationUpdate.get().getError().getErrorCode().equals("100500")) {
+                    ticketOperationUpdate.get().getError().getErrorCode().equals(ErrorState.NOT_AUTHORIZED.getCode())) {
                 missingRegistration(update.getMessage(), bot);
             } else {
                 sendErrorMsg(bot, update, update.getMessage().getReplyToMessage().getText(), ticketOperationUpdate
