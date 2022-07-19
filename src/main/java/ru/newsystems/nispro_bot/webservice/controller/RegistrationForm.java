@@ -18,7 +18,7 @@ import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
 
 public class RegistrationForm extends FormLayout {
     TextField company = new TextField("Company");
-    TextField idTelegram = new TextField("Id Telegram");
+    TextField idTelegram = new TextField("Telegram ID");
     TextField url = new TextField("Url");
     TextField login = new TextField("Login");
     TextField password = new TextField("Password");
