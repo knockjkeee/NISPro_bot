@@ -1,0 +1,4 @@
+Custom/Kernel/Modules/AgentTicketEmail.pm
+
+use LWP::Simple;
+$contents = get("http://localhost:8008/v1/api/test")

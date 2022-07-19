@@ -176,8 +176,8 @@ public class RestNISService {
         Map<String, Object> ticket = new HashMap<>();
 
         ticket.put("QueueID", registration.getQueueId());
-        ticket.put("Priority", registration.getCustomerUser());
-        ticket.put("CustomerUser", "PRc");
+        ticket.put("Priority", "3 normal");
+        ticket.put("CustomerUser", registration.getCustomerUser());
         ticket.put("Title", "Тикет создан с помощью telegram bot");
         ticket.put("State", "open");
         ticket.put("Type", "Unclassified");
