@@ -26,7 +26,6 @@ public class Notification {
                     .replyToMessageId(update.getMessage().getMessageId())
                     .chatId(update.getMessage().getChatId().toString())
                     .parseMode(ParseMode.HTML)
-                    //.replyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build())
                     .build());
         }
     }
@@ -93,7 +92,7 @@ public class Notification {
     }
 
     public static void missingRegistration(Message message, VirtaBot bot) throws TelegramApiException {
-        String text = "<pre>⛔️ Регистрация отсутствует, запрос на регистрацию направить на почту -> ...</pre>";
+        String text = "<pre>⛔️ Регистрация отсутствует, запрос на регистрацию направить на почту info@nis-team.ru.</pre>";
         bot.execute(SendMessage.builder()
                 .text(text)
                 .chatId(message.getChatId().toString())

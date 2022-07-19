@@ -17,27 +17,25 @@ import com.vaadin.flow.shared.Registration;
 import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
 
 public class RegistrationForm extends FormLayout {
-    private TelegramBotRegistration telegramBotRegistration;
-
     TextField company = new TextField("Company");
     TextField idTelegram = new TextField("Id Telegram");
     TextField url = new TextField("Url");
     TextField login = new TextField("Login");
     TextField password = new TextField("Password");
-    TextField queueID = new TextField("QueueID");
-
+    TextField queueID = new TextField("Queue ID");
+    TextField customerUser = new TextField("Customer User");
     Binder<TelegramBotRegistration> binder = new BeanValidationBinder<>(TelegramBotRegistration.class);
-
     Button save = new Button("Save");
     Button delete = new Button("Delete");
     Button close = new Button("Cancel");
+    private TelegramBotRegistration telegramBotRegistration;
 
 
     public RegistrationForm() {
         addClassName("registration-form");
         //Validation Rules
         binder.bindInstanceFields(this);
-        add(company,idTelegram, url, login, password, queueID, createButtonsLayout());
+        add(company, idTelegram, queueID, customerUser, login, password, url, createButtonsLayout());
     }
 
     public void setTelegramBotRegistration(TelegramBotRegistration telegramBotRegistration) {
@@ -78,6 +76,10 @@ public class RegistrationForm extends FormLayout {
         }
     }
 
+    public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType, ComponentEventListener<T> listener) {
+        return getEventBus().addListener(eventType, listener);
+    }
+
     public static abstract class ContactFormEvent extends ComponentEvent<RegistrationForm> {
         private TelegramBotRegistration telegramEntity;
 
@@ -108,10 +110,6 @@ public class RegistrationForm extends FormLayout {
         CloseEvent(RegistrationForm source) {
             super(source, null);
         }
-    }
-
-    public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType, ComponentEventListener<T> listener) {
-        return getEventBus().addListener(eventType, listener);
     }
 
 }

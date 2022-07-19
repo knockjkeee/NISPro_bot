@@ -1,31 +1,39 @@
 package ru.newsystems.nispro_bot.telegram.handler.command;
 
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.ParseMode;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
+import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
+import ru.newsystems.nispro_bot.base.model.domain.Error;
+import ru.newsystems.nispro_bot.base.model.dto.domain.TicketSearchDTO;
 import ru.newsystems.nispro_bot.base.model.state.Command;
+import ru.newsystems.nispro_bot.base.model.state.ErrorState;
+import ru.newsystems.nispro_bot.telegram.service.RestNISService;
+
+import static ru.newsystems.nispro_bot.telegram.utils.Notification.missingRegistration;
 
 @Component
 public class StartCommandHandler implements CommandHandler {
 
     private final VirtaBot bot;
+    private final RestNISService restNISService;
 
-    public StartCommandHandler(VirtaBot bot) {
+    public StartCommandHandler(VirtaBot bot, RestNISService restNISService) {
         this.bot = bot;
+        this.restNISService = restNISService;
     }
 
     @Override
     public void handleCommand(Message message, String text) throws TelegramApiException {
-        bot.execute(SendMessage.builder()
-                .chatId(message.getChatId().toString())
-                .parseMode(ParseMode.HTML)
-                .text("""
-                        <pre>Тут будет первичная проверка на регистрацию</pre>
-                        """)
-                .build());
+        TelegramBotRegistration registration = restNISService.registration(message.getChatId());
+        if (registration.getCompany() == null) {
+            TicketSearchDTO temp = new TicketSearchDTO();
+            Error error = new Error();
+            error.setErrorCode(ErrorState.NOT_AUTHORIZED.getCode());
+            temp.setError(error);
+            missingRegistration(message, bot);
+        }
     }
 
     @Override

@@ -101,11 +101,6 @@ public class MessageUpdateHandler implements UpdateHandler {
                 return false;
             }
         } else {
-            if (ticketSearch.get().getError() != null &&
-                    ticketSearch.get().getError().getErrorCode().equals(ErrorState.NOT_AUTHORIZED.getCode())) {
-                missingRegistration(update.getMessage(), bot);
-                return false;
-            }
 
             for (MessageHandler messageHandler : messageHandlers) {
                 try {
@@ -120,6 +115,11 @@ public class MessageUpdateHandler implements UpdateHandler {
                 }
             }
             if (update.getMessage().hasPhoto()) {
+                return false;
+            }
+            if (ticketSearch.get().getError() != null &&
+                    ticketSearch.get().getError().getErrorCode().equals(ErrorState.NOT_AUTHORIZED.getCode())) {
+                missingRegistration(update.getMessage(), bot);
                 return false;
             }
             sendExceptionMsg(update, text, "tk", bot);
@@ -167,7 +167,6 @@ public class MessageUpdateHandler implements UpdateHandler {
         messageGetDTO.setState(MessageState.SHOW);
         localRepo.update(update.getMessage().getChatId(), messageGetDTO);
     }
-
 
     @Override
     public UpdateHandlerStage getStage() {

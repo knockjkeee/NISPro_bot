@@ -22,11 +22,12 @@ public class AboutCommandHandler implements CommandHandler {
         bot.execute(SendMessage.builder()
                 .chatId(message.getChatId().toString())
                 .parseMode(ParseMode.HTML)
+                .disableWebPagePreview(true)
                 .text("""
                         <i>Этот бот демонстрирует большинство возможностей
                         взаимодействия с информационной системой</i>\040
                         <pre>НИС-про|1.0</pre>
-                       
+                                               
                         <pre>Контактная информация:</pre>
                         Адрес: г. Москва, ул ... дом ...
                         Телефон: +7(499)123-45-67

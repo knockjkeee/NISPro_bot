@@ -104,7 +104,7 @@ public class RestNISService {
             return Optional.of(temp);
         }
         String urlCreate = getUrl("TicketCreate?UserLogin=", registration);
-        HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerCreate(data, registration.getQueueId());
+        HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerCreate(data, registration);
         ResponseEntity<TicketUpdateCreateDTO> response = restTemplate.exchange(urlCreate, HttpMethod.POST, requestEntity, TicketUpdateCreateDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
             return Optional.ofNullable(response.getBody());
@@ -170,13 +170,13 @@ public class RestNISService {
     }
 
 
-    private  HttpEntity<Map<String, Object>> getRequestHeaderTickerCreate(RequestDataDTO data, String queueID) {
+    private  HttpEntity<Map<String, Object>> getRequestHeaderTickerCreate(RequestDataDTO data, TelegramBotRegistration registration) {
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> arc = new HashMap<>();
         Map<String, Object> ticket = new HashMap<>();
 
-        ticket.put("QueueID", queueID);
-        ticket.put("Priority", "3 normal");
+        ticket.put("QueueID", registration.getQueueId());
+        ticket.put("Priority", registration.getCustomerUser());
         ticket.put("CustomerUser", "PRc");
         ticket.put("Title", "Тикет создан с помощью telegram bot");
         ticket.put("State", "open");
@@ -221,7 +221,7 @@ public class RestNISService {
         return headers;
     }
 
-    private TelegramBotRegistration registration(Long id) {
+    public  TelegramBotRegistration registration(Long id) {
         return service.getByTelegramId(String.valueOf(id));
     }
 

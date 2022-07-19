@@ -45,4 +45,8 @@ public class TelegramBotRegistration {
     @NotEmpty
     private String queueId;
 
+    @Column(name = "customer_User", nullable = false, length = 100)
+    @NotEmpty
+    private String customerUser;
+
 }
