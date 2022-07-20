@@ -117,8 +117,7 @@ public class MessageUpdateHandler implements UpdateHandler {
             if (update.getMessage().hasPhoto()) {
                 return false;
             }
-            if (ticketSearch.get().getError() != null &&
-                    ticketSearch.get().getError().getErrorCode().equals(ErrorState.NOT_AUTHORIZED.getCode())) {
+            if (ticketSearch.isPresent()  && ticketSearch.get().getError().getErrorCode().equals(ErrorState.NOT_AUTHORIZED.getCode())) {
                 missingRegistration(update.getMessage(), bot);
                 return false;
             }

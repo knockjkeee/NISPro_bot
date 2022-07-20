@@ -82,7 +82,8 @@ public class Notification {
     public static void sendExceptionMsg(Update update, String text, String service, VirtaBot bot) throws TelegramApiException {
         String resultText =
                 "❗❗❗️ \n<b>Ошибка в запросе</b>" + "\nВ поиск передано не верное значение: [" + service + "] <b>" +
-                        text + "</b>\nПовторите запрос с корректным id";
+                        text + "</b>\nПовторите запрос с корректным id\n\n" +
+                        "<pre>Рекомендации для работы</pre><i>Существующий функционал:</i>\n1 ...\n2...\n3...";
         bot.execute(SendMessage.builder()
                 .chatId(String.valueOf(update.getMessage().getChatId()))
                 .text(resultText)

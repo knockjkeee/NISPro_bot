@@ -40,7 +40,7 @@ public class Messages {
                 + "\n<i>От кого:</i> \t"
                 + article.getFrom().replaceAll("<", "").replaceAll(">", "")
                 + "\n<i>Кому:</i> \t"
-                + article.getTo()
+                + article.getTo().replaceAll("<", "").replaceAll(">", "")
                 + "\n<i>Тело сообщения:</i> "
                 + article.getBody()
                 + "\n<i>Количество файлов прикрепленных к комментарию:</i> \t"

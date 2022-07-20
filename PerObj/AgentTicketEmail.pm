@@ -1873,7 +1873,7 @@ sub Run {
         );
 
         use LWP::Simple;
-        $contents = get("http://localhost:8008/v1/api/test");
+        $contents = get("http://192.168.241.50:8008/v1/api/test");
 
         if ( !$ArticleID ) {
             return $LayoutObject->ErrorScreen();
