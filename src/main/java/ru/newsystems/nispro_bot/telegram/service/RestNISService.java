@@ -6,7 +6,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
+import ru.newsystems.nispro_bot.base.model.domain.Article;
 import ru.newsystems.nispro_bot.base.model.domain.Error;
+import ru.newsystems.nispro_bot.base.model.domain.TicketJ;
 import ru.newsystems.nispro_bot.base.model.dto.domain.RequestDataDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketGetDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketSearchDTO;
@@ -15,6 +17,7 @@ import ru.newsystems.nispro_bot.base.model.state.ErrorState;
 import ru.newsystems.nispro_bot.webservice.services.TelegramBotRegistrationService;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class RestNISService {
@@ -40,7 +43,17 @@ public class RestNISService {
         HttpEntity<MultiValueMap<String, Object>> requestEntity = getRequestHeaderTickerGet(id);
         ResponseEntity<TicketGetDTO> response = restTemplate.exchange(urlGet, HttpMethod.POST, requestEntity, TicketGetDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
-            return Optional.ofNullable(response.getBody());
+            TicketGetDTO body = response.getBody();
+            List<TicketJ> resCollect = body.getTickets().stream().map(ticket -> {
+                List<Article> collect = ticket.getArticles()
+                        .stream()
+                        .filter(article -> article.getIiVisibleForCustomer() == 1)
+                        .collect(Collectors.toList());
+                ticket.setArticles(collect);
+                return ticket;
+            }).collect(Collectors.toList());
+            body.setTickets(resCollect);
+            return Optional.of(body);
         } else {
             return Optional.empty();
         }

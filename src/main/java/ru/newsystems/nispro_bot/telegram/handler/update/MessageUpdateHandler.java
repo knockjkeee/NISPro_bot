@@ -30,6 +30,7 @@ import ru.newsystems.nispro_bot.base.utils.StringUtil;
 import ru.newsystems.nispro_bot.telegram.handler.message.MessageHandler;
 import ru.newsystems.nispro_bot.telegram.service.RestNISService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -130,15 +131,19 @@ public class MessageUpdateHandler implements UpdateHandler {
 
         String resultText = prepareText(ticket);
 
-        List<List<InlineKeyboardButton>> buttons = List.of(List.of(InlineKeyboardButton
+        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+        buttons.add(List.of(InlineKeyboardButton
                 .builder()
                 .text(ReplyKeyboardButton.COMMENT.getLabel() + " Отправить комментарий")
                 .callbackData(StringUtil.serialize(new SendDataDTO(ticket.getTicketNumber())))
-                .build()), List.of(InlineKeyboardButton
-                .builder()
-                .text(ReplyKeyboardButton.DOWNLOAD.getLabel() + " Выгрузить документы")
-                .callbackData(StringUtil.serialize(new DownloadFilesDTO(update.getMessage().getChatId(), ticket.getTicketNumber(), 0L, "s")))
                 .build()));
+        if (ticket.getArticles().size() - 1 > 0) {
+            buttons.add(List.of(InlineKeyboardButton
+                    .builder()
+                    .text(ReplyKeyboardButton.DOWNLOAD.getLabel() + " Выгрузить документы")
+                    .callbackData(StringUtil.serialize(new DownloadFilesDTO(update.getMessage().getChatId(), ticket.getTicketNumber(), 0L, "s")))
+                    .build()));
+        }
 
         bot.execute(SendMessage
                 .builder()
