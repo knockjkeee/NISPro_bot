@@ -13,7 +13,7 @@ import javax.validation.constraints.NotEmpty;
 @AllArgsConstructor
 @Entity
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Table(name = "telegram_bot")
+@Table(name = "telegram_bot_registration")
 public class TelegramBotRegistration {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
