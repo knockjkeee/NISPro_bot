@@ -1,6 +1,5 @@
 package ru.newsystems.nispro_bot.telegram.service;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -22,15 +21,6 @@ public class RestNISService {
     private final RestTemplate restTemplate;
 
     private final TelegramBotRegistrationService service;
-
-    @Value("${nis.pro.url}")
-    private String baseUrl;
-    @Value("${nis.pro.path}")
-    private String path;
-    @Value("${nis.pro.login}")
-    private String login;
-    @Value("${nis.pro.password}")
-    private String password;
 
     public RestNISService(RestTemplate restTemplate, TelegramBotRegistrationService service) {
         this.restTemplate = restTemplate;
@@ -138,6 +128,7 @@ public class RestNISService {
         map.add("Extended", "1");
         map.add("AllArticles", "1");
         map.add("Attachments", "1");
+        map.add("DynamicFields", "1");
         if (listId != null) listId.forEach(e -> map.add("TicketID", e));
         return new HttpEntity<>(map, getHttpHeaders(MediaType.APPLICATION_JSON));
     }

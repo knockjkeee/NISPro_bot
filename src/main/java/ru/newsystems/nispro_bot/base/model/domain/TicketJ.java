@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Data
 @RequiredArgsConstructor
@@ -94,5 +93,6 @@ public class TicketJ {
     private Long unlockTimeout;
     @JsonProperty("UntilTime")
     private Long untilTime;
-
+    @JsonProperty("DynamicField")
+    private List<DynamicField> dynamicField;
 }

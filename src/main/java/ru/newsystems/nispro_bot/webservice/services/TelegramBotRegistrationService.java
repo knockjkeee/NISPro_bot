@@ -3,7 +3,7 @@ package ru.newsystems.nispro_bot.webservice.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
-import ru.newsystems.nispro_bot.base.repo.TelegramBotRepo;
+import ru.newsystems.nispro_bot.base.repo.TelegramBotRegistrationRepo;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,7 +12,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class TelegramBotRegistrationService {
 
-    private final TelegramBotRepo repo;
+    private final TelegramBotRegistrationRepo repo;
 
     public TelegramBotRegistration getByTelegramId(String id) {
         Optional<TelegramBotRegistration> byIdTelegram = repo.findByIdTelegram(id);

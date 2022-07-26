@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface TelegramBotRepo extends JpaRepository<TelegramBotRegistration, Long> {
+public interface TelegramBotRegistrationRepo extends JpaRepository<TelegramBotRegistration, Long> {
 
-    Optional<TelegramBotRegistration> findByCompany(String name);
+    List<TelegramBotRegistration> findByCompany(String company);
 
-    Optional<TelegramBotRegistration> findByIdTelegram(String id);
+    Optional<TelegramBotRegistration> findByIdTelegram(String IdTelegram);
 
     List<TelegramBotRegistration> findByCompanyContainingIgnoreCase(String company);
 
