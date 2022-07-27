@@ -19,16 +19,19 @@ public class TelegramReceiveNotificationNewArticle {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "tn", nullable = false, length = 100)
+    @Column(name = "tn", nullable = true, length = 100)
     private String ticketNumber;
 
-    @Column(name = "id_telegram", nullable = false, length = 100)
+    @Column(name = "id_telegram", nullable = true, length = 100)
     private String idTelegram;
 
-    @Column(name = "queue_id", nullable = false, length = 100)
+    @Column(name = "queue_id", nullable = true, length = 100)
     private String queueId;
 
-    @Column(name = "is_visible_for_customer", nullable = false, length = 100)
+    @Column(name = "is_visible_for_customer", nullable = true, length = 100)
     private Long isVisibleForCustomer;
+
+    @Column(name = "create_by", nullable = true, length = 100)
+    private String createBy;
 
 }

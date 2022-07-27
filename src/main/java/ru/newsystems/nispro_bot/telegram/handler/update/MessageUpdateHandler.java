@@ -137,7 +137,7 @@ public class MessageUpdateHandler implements UpdateHandler {
                 .text(ReplyKeyboardButton.COMMENT.getLabel() + " Отправить комментарий")
                 .callbackData(StringUtil.serialize(new SendDataDTO(ticket.getTicketNumber())))
                 .build()));
-        if (ticket.getArticles().size() - 1 > 0) {
+        if (ticket.getArticles().get(ticket.getArticles().size() - 1).getAttachments() != null) {
             buttons.add(List.of(InlineKeyboardButton
                     .builder()
                     .text(ReplyKeyboardButton.DOWNLOAD.getLabel() + " Выгрузить документы")
