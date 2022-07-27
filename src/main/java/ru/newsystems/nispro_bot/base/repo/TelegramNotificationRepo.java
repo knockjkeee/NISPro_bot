@@ -7,10 +7,4 @@ import ru.newsystems.nispro_bot.base.model.db.TelegramReceiveNotificationNewArti
 @Repository
 public interface TelegramNotificationRepo extends JpaRepository<TelegramReceiveNotificationNewArticle, Long> {
 
-//    Optional<TelegramBotRegistration> findByCompany(String name);
-//
-//    Optional<TelegramBotRegistration> findByIdTelegram(String id);
-//
-//    List<TelegramBotRegistration> findByCompanyContainingIgnoreCase(String company);
-
 }
