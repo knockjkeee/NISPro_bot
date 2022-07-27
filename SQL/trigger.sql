@@ -9,7 +9,7 @@ BEGIN
 
     SET @DYNAMIC_COUNT = (select COUNT(value_text)
                           from dynamic_field_value
-                          where object_id = (select ticket_id from article where article.id = NEW.id));
+                          where object_id = (select ticket_id from article where article.id = NEW.id) and field_id = (select id from dynamic_field where name='Telegram'));
 
     INSERT INTO telegram_receive_notification_new_article
     (id_telegram, queue_id, tn, is_visible_for_customer, create_by, login_count_registration)
@@ -18,7 +18,7 @@ BEGIN
                     WHEN 0 THEN NULL
                     WHEN 1 THEN (select value_text
                                  from dynamic_field_value
-                                 where object_id = (select ticket_id from article where article.id = NEW.id))
+                                 where object_id = (select ticket_id from article where article.id = NEW.id) and field_id = (select id from dynamic_field where name='Telegram'))
                     ELSE NULL
                     END),
             (select queue_id from ticket where id = (select ticket_id from article where id = NEW.id)),
