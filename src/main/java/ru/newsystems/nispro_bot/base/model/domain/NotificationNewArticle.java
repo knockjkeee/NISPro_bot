@@ -24,12 +24,12 @@ public class NotificationNewArticle implements Runnable {
             newArticles.stream()
                     .filter(i -> i.getIsVisibleForCustomer() == 1 && i.getLoginCountRegistration() == 0)
                     .forEach(newArticle -> {
-                try {
-                    int i = Integer.parseInt(newArticle.getIdTelegram());
-                    sendNotification(newArticle);
-                } catch (NumberFormatException ignored) {
-                }
-            });
+                        try {
+                            int i = Integer.parseInt(newArticle.getIdTelegram());
+                            sendNotification(newArticle);
+                        } catch (NumberFormatException ignored) {
+                        }
+                    });
         }
         repo.deleteAll();
     }
@@ -38,7 +38,9 @@ public class NotificationNewArticle implements Runnable {
         try {
             bot.execute(SendMessage.builder()
                     .chatId(newArticle.getIdTelegram())
-                    .text("<pre>❗️ ✉️ Новое сообщение от " + newArticle.getCreateBy() + " по заявке № " + newArticle.getTicketNumber() + "</pre>")
+                    .text("<pre>✉️ Новое сообщение по заявке № " + newArticle.getTicketNumber() + "</pre>" +
+                            "<pre>От " + newArticle.getCreateBy() + "</pre>" + "<b>Тема: </b><i>" +
+                            newArticle.getSubject() + "</i>\n<b>Сообщение: </b><i>" + newArticle.getBody() + "</i>")
                     .parseMode(ParseMode.HTML)
                     .protectContent(true)
                     .build());
