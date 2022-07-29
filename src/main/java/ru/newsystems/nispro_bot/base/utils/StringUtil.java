@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
@@ -42,7 +43,7 @@ public class StringUtil {
     public static String getDateTimeFormat(String created) {
         String ticketDateTime = created.replaceAll("\\s+", "T");
         return LocalDateTime
-                .parse(ticketDateTime)
+                .parse(ticketDateTime).atZone(ZoneId.of("Europe/Moscow"))
                 .format(DateTimeFormatter.ofPattern("dd.MM.yyyy  HH:mm:ss"));
     }
 }

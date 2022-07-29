@@ -4,11 +4,17 @@ import lombok.Builder;
 import lombok.Data;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
 import ru.newsystems.nispro_bot.base.model.db.TelegramReceiveNotificationNewArticle;
+import ru.newsystems.nispro_bot.base.model.dto.callback.SendDataDTO;
+import ru.newsystems.nispro_bot.base.model.state.ReplyKeyboardButton;
 import ru.newsystems.nispro_bot.base.repo.TelegramNotificationRepo;
+import ru.newsystems.nispro_bot.base.utils.StringUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -35,6 +41,14 @@ public class NotificationNewArticle implements Runnable {
     }
 
     private void sendNotification(TelegramReceiveNotificationNewArticle newArticle) {
+
+        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+        buttons.add(List.of(InlineKeyboardButton
+                .builder()
+                .text(ReplyKeyboardButton.COMMENT.getLabel() + " Отправить комментарий")
+                .callbackData(StringUtil.serialize(new SendDataDTO(newArticle.getTicketNumber())))
+                .build()));
+
         try {
             bot.execute(SendMessage.builder()
                     .chatId(newArticle.getIdTelegram())
@@ -43,6 +57,7 @@ public class NotificationNewArticle implements Runnable {
                             newArticle.getSubject() + "</i>\n<b>Сообщение: </b><i>" + newArticle.getBody() + "</i>")
                     .parseMode(ParseMode.HTML)
                     .protectContent(true)
+                    .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
                     .build());
         } catch (TelegramApiException e) {
             e.printStackTrace();
