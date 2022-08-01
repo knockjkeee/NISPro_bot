@@ -9,6 +9,7 @@ import ru.newsystems.nispro_bot.base.integration.VirtaBot;
 import ru.newsystems.nispro_bot.base.model.domain.TicketJ;
 import ru.newsystems.nispro_bot.base.model.dto.callback.TicketsNavigationViewDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketGetDTO;
+import ru.newsystems.nispro_bot.base.model.state.DirectionState;
 import ru.newsystems.nispro_bot.base.model.state.SerializableInlineType;
 import ru.newsystems.nispro_bot.telegram.utils.Button;
 import ru.newsystems.nispro_bot.config.cache.CacheStore;
@@ -48,7 +49,7 @@ public class TicketsNavigationViewHandler extends CallbackUpdateHandler<TicketsN
         TicketGetDTO ticket = cache.get(update.getCallbackQuery().getMessage().getChatId());
         if (ticket != null) {
             String direction = dto.getDirection();
-            if (direction.equals("to")) {
+            if (direction.equals(DirectionState.TO.getDirection())) {
                 List<TicketJ> tickets = ticket
                         .getTickets()
                         .stream()
@@ -60,7 +61,7 @@ public class TicketsNavigationViewHandler extends CallbackUpdateHandler<TicketsN
 
                 editedInlineKeyboard(update, InlineKeyboardMarkup.builder().keyboard(inlineKeyboard), bot);
             }
-            if (direction.equals("back")) {
+            if (direction.equals(DirectionState.BACK.getDirection())) {
                 List<TicketJ> tickets = ticket
                         .getTickets()
                         .stream()

@@ -12,6 +12,7 @@ import ru.newsystems.nispro_bot.base.model.domain.Article;
 import ru.newsystems.nispro_bot.base.model.domain.TicketJ;
 import ru.newsystems.nispro_bot.base.model.dto.callback.ArticlesNavigationViewDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketGetDTO;
+import ru.newsystems.nispro_bot.base.model.state.DirectionState;
 import ru.newsystems.nispro_bot.base.model.state.SerializableInlineType;
 import ru.newsystems.nispro_bot.config.cache.CacheStore;
 
@@ -56,17 +57,17 @@ public class ArticlesNavigationViewHandler extends CallbackUpdateHandler<Article
                     .filter(e -> e.getTicketNumber().equals(dto.getTicketNumber()))
                     .findFirst();
             if (currentTicket.isPresent()) {
-                if (dto.getDirection().equals("to")) {
+                if (dto.getDirection().equals(DirectionState.TO.getDirection())) {
                     int page = dto.getPage() + 1;
                     TicketJ ticketView = currentTicket.get();
                     Article article = ticketView.getArticles().get(dto.getPage());
                     List<List<InlineKeyboardButton>> inlineKeyboard = prepareButtonsFromArticles(update.getCallbackQuery().getMessage().getChatId(), article, page, ticketView);
                     prepareDataAndExecute(update, page, ticketView, article, inlineKeyboard);
                 }
-                if (dto.getDirection().equals("back")) {
+                if (dto.getDirection().equals(DirectionState.BACK.getDirection())) {
                     int page = dto.getPage() - 1;
                     TicketJ ticketView = currentTicket.get();
-                    Article article = ticketView.getArticles().get(page);
+                    Article article = ticketView.getArticles().get(page - 1);
                     List<List<InlineKeyboardButton>> inlineKeyboard = prepareButtonsFromArticles(update.getCallbackQuery().getMessage().getChatId(), article, page, ticketView);
                     prepareDataAndExecute(update, page, ticketView, article, inlineKeyboard);
                 }

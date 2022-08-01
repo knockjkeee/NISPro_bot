@@ -9,6 +9,7 @@ import ru.newsystems.nispro_bot.base.integration.VirtaBot;
 import ru.newsystems.nispro_bot.base.model.domain.Article;
 import ru.newsystems.nispro_bot.base.model.domain.TicketJ;
 import ru.newsystems.nispro_bot.base.model.dto.callback.*;
+import ru.newsystems.nispro_bot.base.model.state.DirectionState;
 import ru.newsystems.nispro_bot.base.model.state.ReplyKeyboardButton;
 import ru.newsystems.nispro_bot.base.utils.StringUtil;
 
@@ -60,23 +61,23 @@ public class Button {
                 buttons.add(List.of(InlineKeyboardButton
                         .builder()
                         .text(ReplyKeyboardButton.TO.getLabel())
-                        .callbackData(StringUtil.serialize(new TicketsNavigationViewDTO(page, "to")))
+                        .callbackData(StringUtil.serialize(new TicketsNavigationViewDTO(page, DirectionState.TO.getDirection())))
                         .build()));
             } else if (allPages == page) {
                 buttons.add(List.of(InlineKeyboardButton
                         .builder()
                         .text(ReplyKeyboardButton.BACK.getLabel())
-                        .callbackData(StringUtil.serialize(new TicketsNavigationViewDTO(page, "back")))
+                        .callbackData(StringUtil.serialize(new TicketsNavigationViewDTO(page, DirectionState.BACK.getDirection())))
                         .build()));
             } else {
                 buttons.add(List.of(InlineKeyboardButton
                         .builder()
                         .text(ReplyKeyboardButton.BACK.getLabel())
-                        .callbackData(StringUtil.serialize(new TicketsNavigationViewDTO(page, "back")))
+                        .callbackData(StringUtil.serialize(new TicketsNavigationViewDTO(page, DirectionState.BACK.getDirection())))
                         .build(), InlineKeyboardButton
                         .builder()
                         .text(ReplyKeyboardButton.TO.getLabel())
-                        .callbackData(StringUtil.serialize(new TicketsNavigationViewDTO(page, "to")))
+                        .callbackData(StringUtil.serialize(new TicketsNavigationViewDTO(page, DirectionState.TO.getDirection())))
                         .build()));
             }
         }
@@ -95,23 +96,23 @@ public class Button {
                 buttons.add(List.of(InlineKeyboardButton
                         .builder()
                         .text(ReplyKeyboardButton.TO.getLabel())
-                        .callbackData(StringUtil.serialize(new ArticlesNavigationViewDTO(page, "to", ticket.getTicketNumber())))
+                        .callbackData(StringUtil.serialize(new ArticlesNavigationViewDTO(page, DirectionState.TO.getDirection(), ticket.getTicketNumber())))
                         .build()));
             } else if (fullSizeData == page) {
                 buttons.add(List.of(InlineKeyboardButton
                         .builder()
                         .text(ReplyKeyboardButton.BACK.getLabel())
-                        .callbackData(StringUtil.serialize(new ArticlesNavigationViewDTO(page, "back",ticket.getTicketNumber())))
+                        .callbackData(StringUtil.serialize(new ArticlesNavigationViewDTO(page, DirectionState.BACK.getDirection(),ticket.getTicketNumber())))
                         .build()));
             } else {
                 buttons.add(List.of(InlineKeyboardButton
                         .builder()
                         .text(ReplyKeyboardButton.BACK.getLabel())
-                        .callbackData(StringUtil.serialize(new ArticlesNavigationViewDTO(page, "back", ticket.getTicketNumber())))
+                        .callbackData(StringUtil.serialize(new ArticlesNavigationViewDTO(page, DirectionState.BACK.getDirection(), ticket.getTicketNumber())))
                         .build(), InlineKeyboardButton
                         .builder()
                         .text(ReplyKeyboardButton.TO.getLabel())
-                        .callbackData(StringUtil.serialize(new ArticlesNavigationViewDTO(page, "to", ticket.getTicketNumber())))
+                        .callbackData(StringUtil.serialize(new ArticlesNavigationViewDTO(page, DirectionState.TO.getDirection(), ticket.getTicketNumber())))
                         .build()));
             }
         }
