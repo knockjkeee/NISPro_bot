@@ -52,8 +52,8 @@ public class NotificationNewArticle implements Runnable {
         try {
             bot.execute(SendMessage.builder()
                     .chatId(newArticle.getIdTelegram())
-                    .text("<pre>✉️ Новое сообщение по заявке № " + newArticle.getTicketNumber() + "</pre>" +
-                            "<pre>От " + newArticle.getCreateBy() + "</pre>" + "<b>Тема: </b><i>" +
+                    .text("<pre>✉️ Новое сообщение \nЗаявке № " + newArticle.getTicketNumber() + "\n</pre>" +
+                            "<pre>От: " + newArticle.getCreateBy() + "</pre>" + "\n<b>Тема: </b><i>" +
                             newArticle.getSubject() + "</i>\n<b>Сообщение: </b><i>" + newArticle.getBody() + "</i>")
                     .parseMode(ParseMode.HTML)
                     .protectContent(true)
