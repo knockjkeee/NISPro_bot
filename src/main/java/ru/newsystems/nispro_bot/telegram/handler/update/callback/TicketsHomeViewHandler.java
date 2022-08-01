@@ -1,9 +1,7 @@
 package ru.newsystems.nispro_bot.telegram.handler.update.callback;
 
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.ActionType;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
-import org.telegram.telegrambots.meta.api.methods.send.SendChatAction;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -48,11 +46,11 @@ public class TicketsHomeViewHandler extends CallbackUpdateHandler<TicketsHomeVie
 
         TicketGetDTO ticket = cache.get(update.getCallbackQuery().getMessage().getChatId());
         if (ticket != null) {
-            bot.execute(SendChatAction
-                    .builder()
-                    .chatId(String.valueOf(update.getCallbackQuery().getMessage().getChatId()))
-                    .action(ActionType.TYPING.toString())
-                    .build());
+//            bot.execute(SendChatAction
+//                    .builder()
+//                    .chatId(String.valueOf(update.getCallbackQuery().getMessage().getChatId()))
+//                    .action(ActionType.TYPING.toString())
+//                    .build());
 
             List<List<InlineKeyboardButton>> inlineKeyboard = prepareButtonsFromTickets(ticket.getTickets(), 1, ticket
                     .getTickets()

@@ -10,7 +10,6 @@ import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
-import ru.newsystems.nispro_bot.base.model.domain.Article;
 import ru.newsystems.nispro_bot.base.model.domain.Attachment;
 import ru.newsystems.nispro_bot.base.model.domain.TicketJ;
 import ru.newsystems.nispro_bot.base.model.dto.MessageGetDTO;
@@ -24,7 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
-import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Component
 public class DownloadFilesHandler extends CallbackUpdateHandler<DownloadFilesDTO> {
@@ -71,13 +70,22 @@ public class DownloadFilesHandler extends CallbackUpdateHandler<DownloadFilesDTO
                     .filter(e -> e.getTicketNumber().equals(dto.getTicketId()))
                     .findFirst()
                     .get();
-            Article article = ticket
+            //TODO отключаем навигацию на коментарии
+//            Article article = ticket
+//                    .getArticles()
+//                    .stream()
+//                    .filter(e -> Objects.equals(e.getArticleID(), dto.getArticleId()))
+//                    .findFirst()
+//                    .get();
+
+            attachments = ticket
                     .getArticles()
                     .stream()
-                    .filter(e -> Objects.equals(e.getArticleID(), dto.getArticleId()))
-                    .findFirst()
-                    .get();
-            attachments = article.getAttachments();
+                    .filter(e -> e.getAttachments() != null)
+                    .flatMap(x -> x.getAttachments().stream())
+                    .collect(Collectors.toList());
+            //TODO отключаем навигацию на коментарии
+//            attachments = article.getAttachments();
         }
 
         if (attachments == null) {
