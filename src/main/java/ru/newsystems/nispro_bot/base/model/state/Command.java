@@ -11,12 +11,20 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public enum Command {
 
-    /*start - Start bot
-    my_id - Get information for me
-    my_ticket - Get my ticket by user name
-    create_ticker - Create new ticket
-    help - Help at work
-    */
+
+//    my_id - Информация для регистрации
+//    my_ticket - Показать мои открытые заявки
+//    create_ticket - Создать заявку
+//    help - Помощь в работе
+//    about - Обо мне
+
+//    Взаимодействие с НИС-про|1.0
+
+//    Этот бот демонстрирует большинство возможностей
+//    взаимодействия с информационной системой
+//    НИС-про|1.0
+
+
     MY_ID("/my_id", "Информация для регистрации"),
     MY_TICKET("/my_ticket", "Показать мои открытые заявки"),
     CREATE_TICKET("/create_ticket", "Создать заявку"),

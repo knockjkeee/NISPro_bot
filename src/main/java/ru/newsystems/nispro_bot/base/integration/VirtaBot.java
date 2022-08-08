@@ -65,7 +65,10 @@ public class VirtaBot extends TelegramLongPollingBot implements Customer {
                             .map(c -> BotCommand.builder().command(c.getName()).description(c.getDesc()).build())
                             .collect(Collectors.toList());
             //TODO add my command
-            //execute(SetMyCommands.builder().commands(commands).build());
+//            execute(SetMyCommands.builder().commands(commands).build());
+//            commands.forEach(e -> {
+//                System.out.println(e.getCommand() + " - " + e.getDescription());
+//            });
         } catch (Exception e) {
             e.printStackTrace();
         }

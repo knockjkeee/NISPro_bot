@@ -9,6 +9,9 @@ org:
 
 spring:
   datasource:
+#    url: mysql://virta:virta@192.168.246.218:3306/virta
+#    mysqlx://
+#    192.168.241.22
     url: jdbc:mysql://192.168.246.218:3306/virta
     username: virta
     password: virta
