@@ -35,7 +35,7 @@ public class TelegramRegistrationView extends VerticalLayout {
     private void configureGrid() {
         grid.addClassNames("contact-grid");
         grid.setSizeFull();
-        grid.setColumns("company", "idTelegram", "queueId", "customerUser", "login", "password", "url");
+        grid.setColumns("company", "idTelegram", "queueName", "customerUser", "login", "password", "url");
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
         grid.asSingleSelect().addValueChangeListener(event ->
                 editContact(event.getValue()));

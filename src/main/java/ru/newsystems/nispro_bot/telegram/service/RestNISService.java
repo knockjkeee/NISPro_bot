@@ -179,7 +179,7 @@ public class RestNISService {
         Map<String, Object> ticket = new HashMap<>();
         List<Object> dynamic = new ArrayList<>();
 
-        ticket.put("QueueID", registration.getQueueId());
+        ticket.put("Queue", registration.getQueueName());
         ticket.put("Priority", "3 normal");
         ticket.put("CustomerUser", registration.getCustomerUser());
         ticket.put("Title", "Тикет создан с помощью telegram bot [автор: " + userName + "].");

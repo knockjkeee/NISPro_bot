@@ -22,7 +22,7 @@ public class RegistrationForm extends FormLayout {
     TextField url = new TextField("Url");
     TextField login = new TextField("Login");
     TextField password = new TextField("Password");
-    TextField queueID = new TextField("Queue ID");
+    TextField queueName = new TextField("Queue Name");
     TextField customerUser = new TextField("Customer User");
     Binder<TelegramBotRegistration> binder = new BeanValidationBinder<>(TelegramBotRegistration.class);
     Button save = new Button("Save");
@@ -35,7 +35,7 @@ public class RegistrationForm extends FormLayout {
         addClassName("registration-form");
         //Validation Rules
         binder.bindInstanceFields(this);
-        add(company, idTelegram, queueID, customerUser, login, password, url, createButtonsLayout());
+        add(company, idTelegram, queueName, customerUser, login, password, url, createButtonsLayout());
     }
 
     public void setTelegramBotRegistration(TelegramBotRegistration telegramBotRegistration) {
