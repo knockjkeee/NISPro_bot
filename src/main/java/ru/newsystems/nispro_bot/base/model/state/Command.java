@@ -12,9 +12,9 @@ import java.util.stream.Stream;
 public enum Command {
 
 
-//    my_id - Информация для регистрации
 //    my_ticket - Показать мои открытые заявки
 //    create_ticket - Создать заявку
+//    my_id - Информация для регистрации
 //    help - Помощь в работе
 //    about - Обо мне
 
@@ -25,9 +25,9 @@ public enum Command {
 //    НИС-про|1.0
 
 
-    MY_ID("/my_id", "Информация для регистрации"),
     MY_TICKET("/my_ticket", "Показать мои открытые заявки"),
     CREATE_TICKET("/create_ticket", "Создать заявку"),
+    MY_ID("/my_id", "Информация для регистрации"),
     HELP("/help", "Помощь в работе"),
     ABOUT("/about", "Обо мне"),
     START("/start", "Init work"),
