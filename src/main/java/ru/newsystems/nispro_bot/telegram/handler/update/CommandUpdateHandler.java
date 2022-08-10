@@ -42,7 +42,8 @@ public class CommandUpdateHandler implements UpdateHandler {
         }
 
         TelegramBotRegistration registration = service.getByTelegramId(String.valueOf(update.getMessage().getChatId()));
-        if (registration.isLightVersion() && !command.get().getCommand().getName().equals(Command.MY_ID.getName())) {
+        if ((!registration.isLightVersion() && update.getMessage().getChatId() < 0) || (registration.isLightVersion() &&
+                !command.get().getCommand().getName().equals(Command.MY_ID.getName()))) {
             return false;
         }
         handleCommand(update, command.get().getCommand(), command.get().getText());
