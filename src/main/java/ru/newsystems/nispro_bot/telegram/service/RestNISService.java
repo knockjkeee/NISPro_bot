@@ -21,8 +21,11 @@ import java.util.stream.Collectors;
 
 @Service
 public class RestNISService {
-    private final RestTemplate restTemplate;
 
+    public static final String GENERICINTERFACE_PL_WEBSERVICE_TICKET =
+            "/otrs/nph-genericinterface.pl/Webservice/Ticket/";
+
+    private final RestTemplate restTemplate;
     private final TelegramBotRegistrationService service;
 
     public RestNISService(RestTemplate restTemplate, TelegramBotRegistrationService service) {
@@ -179,7 +182,7 @@ public class RestNISService {
         Map<String, Object> ticket = new HashMap<>();
         List<Object> dynamic = new ArrayList<>();
 
-        ticket.put("QueueID", registration.getQueueId());
+        ticket.put("Queue", registration.getQueueName());
         ticket.put("Priority", "3 normal");
         ticket.put("CustomerUser", registration.getCustomerUser());
         ticket.put("Title", "Тикет создан с помощью telegram bot [автор: " + userName + "].");
@@ -232,7 +235,9 @@ public class RestNISService {
     }
 
     public  TelegramBotRegistration registration(Long id) {
-        return service.getByTelegramId(String.valueOf(id));
+        TelegramBotRegistration byTelegramId = service.getByTelegramId(String.valueOf(id));
+        byTelegramId.setUrl(byTelegramId.getUrl() + GENERICINTERFACE_PL_WEBSERVICE_TICKET);
+        return byTelegramId;
     }
 
 

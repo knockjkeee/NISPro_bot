@@ -7,7 +7,7 @@ public enum UpdateHandlerStage {
     ARTICLE,
     MESSAGE,
     COMMAND,
-    REPLY_BUTTON;
+    HIDE;
 
     public int getOrder() {
         return ordinal();

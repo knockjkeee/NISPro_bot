@@ -8,6 +8,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
 import ru.newsystems.nispro_bot.base.model.state.Command;
 
+import static ru.newsystems.nispro_bot.telegram.utils.Messages.prepareHelpMsg;
+
 @Component
 public class HelpCommandHandler implements CommandHandler {
 
@@ -21,7 +23,7 @@ public class HelpCommandHandler implements CommandHandler {
     public void handleCommand(Message message, String text) throws TelegramApiException {
         bot.execute(
                 SendMessage.builder()
-                        .text("<pre>HELP</pre>\n<u>HELP</u>\n<i>HELP</i>\n<b>HELP</b>")
+                        .text(prepareHelpMsg())
                         .parseMode(ParseMode.HTML)
                         .chatId(message.getChatId().toString())
                         .build());

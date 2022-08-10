@@ -48,7 +48,7 @@ public class TelegramBotRegistrationService {
             old.setLogin(entity.getLogin());
             old.setPassword(entity.getPassword());
             old.setUrl(entity.getUrl());
-            old.setQueueId(entity.getQueueId());
+            old.setQueueName(entity.getQueueName());
             repo.save(old);
         } else {
             repo.save(entity);

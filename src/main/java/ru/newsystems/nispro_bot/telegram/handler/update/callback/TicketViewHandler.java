@@ -19,8 +19,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static ru.newsystems.nispro_bot.telegram.utils.Button.editedInlineKeyboard;
-import static ru.newsystems.nispro_bot.telegram.utils.Button.prepareButtonsFromArticles;
-import static ru.newsystems.nispro_bot.telegram.utils.Messages.prepareTextForTickerAndArticle;
+import static ru.newsystems.nispro_bot.telegram.utils.Button.prepareButtonsFromAllArticles;
+import static ru.newsystems.nispro_bot.telegram.utils.Messages.prepareTextForTickerAndAllArticle;
 import static ru.newsystems.nispro_bot.telegram.utils.Notification.queryIsMissing;
 
 
@@ -64,9 +64,12 @@ public class TicketViewHandler extends CallbackUpdateHandler<TicketViewDTO> {
             if (currentTicket.isPresent()) {
                 int page = 1;
                 TicketJ ticketView = currentTicket.get();
-                Article article = ticketView.getArticles().get(0);
-                List<List<InlineKeyboardButton>> inlineKeyboard = prepareButtonsFromArticles(update.getCallbackQuery().getMessage().getChatId(), article, page, ticketView);
-                String resultText = prepareTextForTickerAndArticle(page, ticketView, article);
+                //TODO отключаем навигацию на коментарии
+//                Article article = ticketView.getArticles().get(0);
+
+                List<Article> articles = ticketView.getArticles();
+                List<List<InlineKeyboardButton>> inlineKeyboard = prepareButtonsFromAllArticles(update.getCallbackQuery().getMessage().getChatId(), articles, page, ticketView);
+                String resultText = prepareTextForTickerAndAllArticle(page, ticketView, articles);
 
                 bot.execute(EditMessageText
                         .builder()

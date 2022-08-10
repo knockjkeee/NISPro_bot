@@ -5,6 +5,9 @@ import ru.newsystems.nispro_bot.base.model.domain.Article;
 import ru.newsystems.nispro_bot.base.model.domain.TicketJ;
 import ru.newsystems.nispro_bot.base.model.state.TicketState;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static ru.newsystems.nispro_bot.base.utils.StringUtil.getDateTimeFormat;
 
 
@@ -61,5 +64,37 @@ public class Messages {
                 + ")"
                 + ":</pre>";
         return prepareTextArticle(article, sizeAttach, lastComment);
+    }
+
+    public static String prepareTextForTickerAndAllArticle(int page, TicketJ ticketView, List<Article> article) {
+        String ticketText = prepareTextTicket(ticketView);
+        String countTMsgText = ticketText + "\n<i>Количество комментариев:</i>  " + ticketView
+                .getArticles()
+                .size() + "\n";
+        String comments = article.stream().map(e -> {
+            return "\n<pre>Комментарий №" + e.getArticleID() + " от " + e.getFrom().replaceAll("<", "").replaceAll(">", "") + "</pre>" + "\n >>> " +
+                    e.getBody().replaceAll("[\n\r]$", "");
+        }).collect(Collectors.joining("\n"));
+
+        return countTMsgText + comments + "\n\n \uD83D\uDCBE \uD83D\uDDC2 <i>Количество файлов прикрепленных к комментариям:</i> \t"
+                + (int) article.stream()
+                .filter(e -> e.getAttachments() != null)
+                .mapToLong(x -> x.getAttachments().size())
+                .sum();
+    }
+
+    public static String prepareHelpMsg() {
+        return """
+                <pre>Рекомендации для работы</pre><i>Существующий функционал:</i>
+
+                1 Быстрый поиск - Для быстрого поиска Вам необходимо сообщить боту № Заявки. Это числовое значение из 15 символов. В результате бот продемонстрирует детализированный контекст искомой заявок с прикрепленным последним комментарием. Из Функций Вам будет доступно:
+                    * Добавить комментарий
+                    * Выгрузить из последнего комментария документы если они прикреплены
+
+                2 Расширенный поиск - Воспользоваться этой функцией Вы можете, выбрав из команд бота команду <b>/my_ticket</b>. Вашему вниманию откроется детализированный навигационная панель с вашими активными заявками. Самая важная особенность этого функционала, Вы всегда сможете проконтролировать полный контекст, со всеми комментариями и файлами по любой активной заявки созданной Вами. Из Функций Вам будет доступно все тоже что есть и в формате быстрого поиска:
+                    * Добавить комментарий
+                    * Выгрузить из последнего комментария документы если они прикреплены
+
+                3 Создание заявки - Воспользоваться этой функцией Вы можете, выбрав из команд бота команду <b>/create_ticket</b>. От Вашего имени создастся заявка в очередь, которая числиться за Вами в системе""";
     }
 }
