@@ -28,12 +28,9 @@ public class UpdateReceiveService implements Subscriber {
         for (UpdateHandler updateHandler : updateHandlers) {
             try {
                 if (updateHandler.handleUpdate(update)) {
-                    //TODO log good work
                     return;
                 }
-                //TODO log bad work, search entity
             } catch (Exception e) {
-                //TODO log excpt work
                 e.printStackTrace();
             }
         }

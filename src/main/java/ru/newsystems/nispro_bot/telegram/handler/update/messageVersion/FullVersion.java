@@ -57,15 +57,8 @@ public class FullVersion implements Version {
     @Override
     public boolean handle(Update update, boolean isLightVersion) throws TelegramApiException {
         if (isLightVersion) return false;
-        if(update.getMessage().getChatId() < 0) return false;
-//        Message message = getMessage(update);
-//        if (message == null) return false;
-//        String text = message.getText();
-//        Optional<ParseDTO> command = commandParser.parseCommand(text);
-//        if (command.isEmpty()) {
-            return handleText(update);
-//        }
-//        return false;
+        if (update.getMessage().getChatId() < 0) return false;
+        return handleText(update);
     }
 
     private boolean handleText(Update update) throws TelegramApiException {
