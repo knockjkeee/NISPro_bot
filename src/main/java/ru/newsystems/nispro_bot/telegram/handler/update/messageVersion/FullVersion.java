@@ -6,7 +6,6 @@ import org.telegram.telegrambots.meta.api.methods.ActionType;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendChatAction;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -16,7 +15,6 @@ import ru.newsystems.nispro_bot.base.integration.parser.CommandParser;
 import ru.newsystems.nispro_bot.base.model.domain.Article;
 import ru.newsystems.nispro_bot.base.model.domain.TicketJ;
 import ru.newsystems.nispro_bot.base.model.dto.MessageGetDTO;
-import ru.newsystems.nispro_bot.base.model.dto.ParseDTO;
 import ru.newsystems.nispro_bot.base.model.dto.callback.DownloadFilesDTO;
 import ru.newsystems.nispro_bot.base.model.dto.callback.SendDataDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketGetDTO;
@@ -34,7 +32,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static ru.newsystems.nispro_bot.base.utils.NumberUtil.getIdByTicketNumber;
-import static ru.newsystems.nispro_bot.telegram.utils.Action.getMessage;
 import static ru.newsystems.nispro_bot.telegram.utils.Messages.prepareTextArticle;
 import static ru.newsystems.nispro_bot.telegram.utils.Messages.prepareTextTicket;
 import static ru.newsystems.nispro_bot.telegram.utils.Notification.*;
@@ -60,14 +57,14 @@ public class FullVersion implements Version {
     @Override
     public boolean handle(Update update, boolean isLightVersion) throws TelegramApiException {
         if (isLightVersion) return false;
-        Message message = getMessage(update);
-        if (message == null) return false;
-        String text = message.getText();
-        Optional<ParseDTO> command = commandParser.parseCommand(text);
-        if (command.isEmpty()) {
+//        Message message = getMessage(update);
+//        if (message == null) return false;
+//        String text = message.getText();
+//        Optional<ParseDTO> command = commandParser.parseCommand(text);
+//        if (command.isEmpty()) {
             return handleText(update);
-        }
-        return false;
+//        }
+//        return false;
     }
 
     private boolean handleText(Update update) throws TelegramApiException {

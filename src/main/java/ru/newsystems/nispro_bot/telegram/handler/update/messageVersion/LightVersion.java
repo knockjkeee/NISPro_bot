@@ -19,6 +19,7 @@ public class LightVersion implements Version {
     @Override
     public boolean handle(Update update, boolean isLightVersion) throws TelegramApiException {
         if (!isLightVersion) return false;
+
         bot.execute(SendMessage.builder()
                 .chatId(String.valueOf(update.getMessage().getChatId()))
                 .text(update.getMessage().getText())
