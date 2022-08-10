@@ -35,7 +35,7 @@ public class TelegramRegistrationView extends VerticalLayout {
     private void configureGrid() {
         grid.addClassNames("contact-grid");
         grid.setSizeFull();
-        grid.setColumns("company", "idTelegram", "queueName", "customerUser", "login", "password", "url");
+        grid.setColumns("company", "lightVersion", "idTelegram", "queueName", "customerUser", "login", "password", "url");
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
         grid.asSingleSelect().addValueChangeListener(event ->
                 editContact(event.getValue()));
@@ -43,7 +43,7 @@ public class TelegramRegistrationView extends VerticalLayout {
 
     private void configureForm() {
         registrationForm = new RegistrationForm();
-        registrationForm.setWidth("55em");
+        registrationForm.setWidth("25em");
         registrationForm.addListener(RegistrationForm.SaveEvent.class, this::saveContact);
         registrationForm.addListener(RegistrationForm.DeleteEvent.class, this::deleteContact);
         registrationForm.addListener(RegistrationForm.CloseEvent.class, e -> closeEditor());

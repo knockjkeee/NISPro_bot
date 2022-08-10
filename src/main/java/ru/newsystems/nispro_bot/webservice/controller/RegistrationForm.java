@@ -5,6 +5,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -18,6 +19,7 @@ import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
 
 public class RegistrationForm extends FormLayout {
     TextField company = new TextField("Company");
+    Checkbox lightVersion = new Checkbox("Light Version");
     TextField idTelegram = new TextField("Telegram ID");
     TextField url = new TextField("Url");
     TextField login = new TextField("Login");
@@ -35,7 +37,7 @@ public class RegistrationForm extends FormLayout {
         addClassName("registration-form");
         //Validation Rules
         binder.bindInstanceFields(this);
-        add(company, idTelegram, queueName, customerUser, login, password, url, createButtonsLayout());
+        add(company, lightVersion, idTelegram, queueName, customerUser, login, password, url, createButtonsLayout());
     }
 
     public void setTelegramBotRegistration(TelegramBotRegistration telegramBotRegistration) {

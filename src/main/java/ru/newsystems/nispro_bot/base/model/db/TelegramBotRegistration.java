@@ -49,4 +49,7 @@ public class TelegramBotRegistration {
     @NotEmpty
     private String customerUser;
 
+    @Column(name = "light_version", nullable = false, length = 100)
+    private boolean lightVersion;
+
 }
