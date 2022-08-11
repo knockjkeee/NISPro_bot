@@ -2,6 +2,7 @@ package ru.newsystems.nispro_bot.telegram.handler.message;
 
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
 import ru.newsystems.nispro_bot.base.model.domain.Attachment;
@@ -12,6 +13,7 @@ import ru.newsystems.nispro_bot.telegram.task.SendDataDTO;
 import ru.newsystems.nispro_bot.telegram.task.SendLocalRepo;
 import ru.newsystems.nispro_bot.telegram.task.SendOperationTask;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -41,37 +43,49 @@ public class MessageSendDataHandler implements MessageHandler {
     }
 
     @Override
-    public boolean handleUpdate(Update update) throws TelegramApiException {
-        if (update.getMessage().getReplyToMessage() != null) {
-            List<String> replyTexts = splitMessageText(update.getMessage().getReplyToMessage().getText(), "№");
-            boolean isSendComment = replyTexts.get(0).contains(MessageState.SENDCOMMENT.getName());
-            boolean isCreateTicket = replyTexts.get(0).contains(MessageState.CREATETICKET.getName());
-            if (isSendComment || isCreateTicket) {
+    public boolean handleUpdate(Update update, boolean isRedirect) throws TelegramApiException {
+
+        boolean isReplyText = update.getMessage().getReplyToMessage() != null;
+        List<String> replyTexts = isReplyText ? splitMessageText(update.getMessage().getReplyToMessage().getText(), "№") : Collections.emptyList();
+            boolean isSendComment = isReplyText && replyTexts.get(0).contains(MessageState.SENDCOMMENT.getName());
+            boolean isCreateTicket = isReplyText && replyTexts.get(0).contains(MessageState.CREATETICKET.getName());
+            User isForward = update.getMessage().getForwardFrom();
+            if (isSendComment || isCreateTicket || isRedirect) {
                 if (update.getMessage().hasText()) {
-                    prepareMsg(update, replyTexts, isSendComment);
-                    return true;
+                    if (isRedirect) {
+                        if (isForward == null) {
+                            prepareMsg(update, replyTexts, isSendComment, isRedirect);
+                            return true;
+                        } else {
+                            //TODO add article
+                            return true;
+                        }
+                    } else {
+                        prepareMsg(update, replyTexts, isSendComment, isRedirect);
+                        return true;
+                    }
                 }
                 if (update.getMessage().hasPhoto()) {
-                    return preparePhoto(update, replyTexts, isSendComment);
+                    return preparePhoto(update, replyTexts, isSendComment, isRedirect);
                 }
                 if (update.getMessage().hasDocument()) {
-                    if (prepareDocument(update, replyTexts, isSendComment)) return true;
+                    if (prepareDocument(update, replyTexts, isSendComment, isRedirect)) return true;
                     return true;
                 }
                 return false;
             }
             return false;
-        }
-        return false;
+//        }
+//        return false;
     }
 
-    private boolean prepareDocument(Update update, List<String> replyTexts, boolean isSendComment) throws TelegramApiException {
+    private boolean prepareDocument(Update update, List<String> replyTexts, boolean isSendComment, boolean isRedirect) throws TelegramApiException {
         SendDataDTO sendDataDTO = localRepo.get(update.getMessage().getChatId());
         if (sendDataDTO != null && !sendDataDTO.getSchedule().isDone()) {
             prepareDataWithUpdateSchedule(update, sendDataDTO, prepareAttachmentFromDocument(update, bot));
             return true;
         }
-        RequestDataDTO req = prepareReqWithDocument(update, replyTexts, update.getMessage().getCaption(), bot);
+        RequestDataDTO req = prepareReqWithDocument(update, replyTexts, update.getMessage().getCaption(), bot, isRedirect);
         if (isSendComment) {
             sendNewComment(update, req, restNISService, bot);
         }else{
@@ -80,16 +94,16 @@ public class MessageSendDataHandler implements MessageHandler {
         return false;
     }
 
-    private boolean preparePhoto(Update update, List<String> replyTexts, boolean isSendComment) throws TelegramApiException {
+    private boolean preparePhoto(Update update, List<String> replyTexts, boolean isSendComment, boolean isRedirect) throws TelegramApiException {
         SendDataDTO sendDataDTO = localRepo.get(update.getMessage().getChatId());
         if (sendDataDTO != null && !sendDataDTO.getSchedule().isDone()) {
             prepareDataWithUpdateSchedule(update, sendDataDTO, prepareAttachmentFromPhoto(update, bot));
             return true;
         } else {
-            RequestDataDTO req = prepareReqWithPhoto(update, replyTexts, update.getMessage().getCaption(), bot);
+            RequestDataDTO req = prepareReqWithPhoto(update, replyTexts, update.getMessage().getCaption(), bot, isRedirect);
             if ((sendDataDTO == null || sendDataDTO.getSchedule().isDone())
                     && update.getMessage().getMediaGroupId() != null) {
-                prepareTaskForExecutor(update, req, isSendComment);
+                prepareTaskForExecutor(update, req, isSendComment, isRedirect);
                 return true;
             }
             if (isSendComment) {
@@ -101,9 +115,9 @@ public class MessageSendDataHandler implements MessageHandler {
         }
     }
 
-    private void prepareMsg(Update update, List<String> replyTexts, boolean isSendComment) {
-        RequestDataDTO req = prepareReqWithMessage(replyTexts, update.getMessage().getText());
-        prepareTaskForExecutor(update, req, isSendComment);
+    private void prepareMsg(Update update, List<String> replyTexts, boolean isSendComment, boolean isRedirect) {
+        RequestDataDTO req = prepareReqWithMessage(replyTexts, update.getMessage().getText(), isRedirect);
+        prepareTaskForExecutor(update, req, isSendComment, isRedirect);
     }
 
     private void prepareDataWithUpdateSchedule(Update update, SendDataDTO sendDataDTO, Attachment attachment) {
@@ -120,7 +134,7 @@ public class MessageSendDataHandler implements MessageHandler {
         localRepo.update(update.getMessage().getDate().longValue() - 1, sendDataDTO);
     }
 
-    private void prepareTaskForExecutor(Update update, RequestDataDTO req, boolean isSendComment) {
+    private void prepareTaskForExecutor(Update update, RequestDataDTO req, boolean isSendComment, boolean isRedirect) {
         SendOperationTask task = SendOperationTask.builder()
                 .req(req)
                 .update(update)
@@ -128,6 +142,9 @@ public class MessageSendDataHandler implements MessageHandler {
                 .restNISService(restNISService)
                 .isSendComment(isSendComment)
                 .build();
+        if (isRedirect) {
+            task.setCountRedirect(task.getCountRedirect() + 1);
+        }
         ScheduledFuture<?> schedule = executor.schedule(task, DELAY_FOR_ADD_DOCS_OR_PIC, TimeUnit.SECONDS);
         SendDataDTO sendDataDTO = SendDataDTO.builder().task(task).schedule(schedule).build();
         localRepo.update(update.getMessage().getChatId(), sendDataDTO);

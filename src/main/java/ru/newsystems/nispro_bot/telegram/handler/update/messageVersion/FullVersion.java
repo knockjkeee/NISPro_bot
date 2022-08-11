@@ -75,12 +75,15 @@ public class FullVersion implements Version {
         if (ticketSearch.isPresent()) {
             return getDataByTicketID(update, text, ticketSearch);
         } else {
-            if (prepareFunctionalMsg(update)) return true;
+            boolean isRedirect = update.getMessage().getForwardFrom() != null;
+            if (prepareFunctionalMsg(update, isRedirect)) return true;
             if (checkInnerAttr(update, ticketSearch)) return false;
-            TelegramBotRegistration byAgentIdTelegram =
-                    service.getByAgentIdTelegram(String.valueOf(update.getMessage().getChatId()));
+            TelegramBotRegistration byAgentIdTelegram = service.getByAgentIdTelegram(String.valueOf(update.getMessage()
+                    .getChatId()));
             if (byAgentIdTelegram.getId() == null) {
                 sendExceptionMsg(update, text, "tk", bot);
+            } else {
+                if (prepareFunctionalMsg(update, true)) return true;
             }
         }
         return false;
@@ -98,10 +101,10 @@ public class FullVersion implements Version {
         return false;
     }
 
-    private boolean prepareFunctionalMsg(Update update) {
+    private boolean prepareFunctionalMsg(Update update, boolean isRedirect) {
         for (MessageHandler messageHandler : messageHandlers) {
             try {
-                if (messageHandler.handleUpdate(update)) {
+                if (messageHandler.handleUpdate(update, isRedirect)) {
                     return true;
                 }
             } catch (Exception e) {
@@ -113,8 +116,8 @@ public class FullVersion implements Version {
 
     private boolean getDataByTicketID(Update update, String text, Optional<TicketSearchDTO> ticketSearch) throws TelegramApiException {
         List<Long> ticketsId = ticketSearch.get().getTicketIDs();
-        Optional<TicketGetDTO> ticket =
-                restNISService.getTicketOperationGet(ticketsId, update.getMessage().getChatId());
+        Optional<TicketGetDTO> ticket = restNISService.getTicketOperationGet(ticketsId, update.getMessage()
+                .getChatId());
         if (ticket.isPresent()) {
             if (ticket.get().getError() == null) {
                 sendTicketTextMsg(update, ticket.get().getTickets().get(0));

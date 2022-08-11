@@ -19,6 +19,7 @@ import static ru.newsystems.nispro_bot.telegram.utils.Action.sendNewComment;
 @Data
 @Builder
 public class SendOperationTask implements Runnable {
+    private int countRedirect;
     private RequestDataDTO req;
     private boolean isSendComment;
     private Update update;
