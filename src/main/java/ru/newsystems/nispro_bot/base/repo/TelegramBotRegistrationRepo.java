@@ -14,6 +14,8 @@ public interface TelegramBotRegistrationRepo extends JpaRepository<TelegramBotRe
 
     Optional<TelegramBotRegistration> findByIdTelegram(String IdTelegram);
 
+    Optional<TelegramBotRegistration> findByAgentIdTelegram(String agentIdTelegram);
+
     List<TelegramBotRegistration> findByCompanyContainingIgnoreCase(String company);
 
 }

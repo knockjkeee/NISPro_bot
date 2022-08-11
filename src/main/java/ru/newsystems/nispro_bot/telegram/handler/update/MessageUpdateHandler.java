@@ -36,14 +36,13 @@ public class MessageUpdateHandler implements UpdateHandler {
     }
 
     @Override
-    public boolean handleUpdate(Update update) throws TelegramApiException {
+    public boolean handleUpdate(Update update, TelegramBotRegistration registration) throws TelegramApiException {
 
         Message message = getMessage(update);
         if (message == null) return false;
         String text = message.getText();
         Optional<ParseDTO> command = commandParser.parseCommand(text);
         if (command.isEmpty()) {
-            TelegramBotRegistration registration = service.getByTelegramId(String.valueOf(update.getMessage().getChatId()));
             if (registration.getCompany() == null) {
                 if (update.getMessage().getChatId() > 0) {
                     missingRegistration(update.getMessage(), bot);
@@ -53,7 +52,7 @@ public class MessageUpdateHandler implements UpdateHandler {
 
             for (Version messageHandler : messageHandlers) {
                 try {
-                    if (messageHandler.handle(update, registration.isLightVersion())) {
+                    if (messageHandler.handle(update, registration)) {
                         return true;
                     }
                 } catch (Exception e) {

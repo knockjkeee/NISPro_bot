@@ -21,6 +21,7 @@ public class RegistrationForm extends FormLayout {
     TextField company = new TextField("Company");
     Checkbox lightVersion = new Checkbox("Light Version");
     TextField idTelegram = new TextField("Telegram ID");
+    TextField agentIdTelegram = new TextField("Agent Telegram ID");
     TextField url = new TextField("Url");
     TextField login = new TextField("Login");
     TextField password = new TextField("Password");
@@ -37,7 +38,7 @@ public class RegistrationForm extends FormLayout {
         addClassName("registration-form");
         //Validation Rules
         binder.bindInstanceFields(this);
-        add(company, lightVersion, idTelegram, queueName, customerUser, login, password, url, createButtonsLayout());
+        add(company, lightVersion, idTelegram, agentIdTelegram, queueName, customerUser, login, password, url, createButtonsLayout());
     }
 
     public void setTelegramBotRegistration(TelegramBotRegistration telegramBotRegistration) {

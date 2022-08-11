@@ -4,7 +4,9 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.newsystems.nispro_bot.base.integration.Subscriber;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
+import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
 import ru.newsystems.nispro_bot.telegram.handler.update.UpdateHandler;
+import ru.newsystems.nispro_bot.webservice.services.TelegramBotRegistrationService;
 
 import javax.annotation.PostConstruct;
 import java.util.Comparator;
@@ -16,8 +18,10 @@ public class UpdateReceiveService implements Subscriber {
 
     private final VirtaBot bot;
     private List<UpdateHandler> updateHandlers;
+    private final TelegramBotRegistrationService service;
 
-    public UpdateReceiveService(VirtaBot bot, List<UpdateHandler> updateHandlers) {
+    public UpdateReceiveService(VirtaBot bot, List<UpdateHandler> updateHandlers, TelegramBotRegistrationService service) {
+        this.service = service;
         bot.subscribe(this);
         this.bot = bot;
         this.updateHandlers = updateHandlers;
@@ -25,9 +29,11 @@ public class UpdateReceiveService implements Subscriber {
 
     @Override
     public void handleEvent(Update update) {
+        TelegramBotRegistration registration = service.getByTelegramId(String.valueOf(update.getMessage().getChatId()));
+
         for (UpdateHandler updateHandler : updateHandlers) {
             try {
-                if (updateHandler.handleUpdate(update)) {
+                if (updateHandler.handleUpdate(update, registration)) {
                     return;
                 }
             } catch (Exception e) {

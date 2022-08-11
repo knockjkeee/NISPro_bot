@@ -6,6 +6,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
+import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
 import ru.newsystems.nispro_bot.base.model.state.Command;
 
 @Component
@@ -18,7 +19,7 @@ public class AboutCommandHandler implements CommandHandler {
     }
 
     @Override
-    public void handleCommand(Message message, String text) throws TelegramApiException {
+    public void handleCommand(Message message, String text, TelegramBotRegistration registration) throws TelegramApiException {
         bot.execute(SendMessage.builder()
                 .chatId(message.getChatId().toString())
                 .parseMode(ParseMode.HTML)

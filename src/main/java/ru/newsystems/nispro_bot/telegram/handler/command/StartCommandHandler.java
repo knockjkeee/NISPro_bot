@@ -25,8 +25,7 @@ public class StartCommandHandler implements CommandHandler {
     }
 
     @Override
-    public void handleCommand(Message message, String text) throws TelegramApiException {
-        TelegramBotRegistration registration = restNISService.registration(message.getChatId());
+    public void handleCommand(Message message, String text, TelegramBotRegistration registration) throws TelegramApiException {
         if (registration.getCompany() == null) {
             TicketSearchDTO temp = new TicketSearchDTO();
             Error error = new Error();

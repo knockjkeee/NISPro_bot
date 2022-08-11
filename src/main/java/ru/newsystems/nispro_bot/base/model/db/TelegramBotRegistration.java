@@ -29,6 +29,10 @@ public class TelegramBotRegistration {
     @NotEmpty
     private String idTelegram;
 
+    @Column(name = "agent_idtTelegram", nullable = false, length = 100)
+//    @NotEmpty
+    private String agentIdTelegram;
+
     @Column(name = "url", nullable = false, length = 100)
     @NotEmpty
     private String url;

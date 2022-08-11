@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
 import ru.newsystems.nispro_bot.base.model.dto.callback.SerializableInlineObject;
 import ru.newsystems.nispro_bot.base.model.state.SerializableInlineType;
 import ru.newsystems.nispro_bot.base.model.state.UpdateHandlerStage;
@@ -23,7 +24,7 @@ public abstract class CallbackUpdateHandler<T extends SerializableInlineObject>
   protected abstract void handleCallback(Update update, T dto) throws TelegramApiException;
 
   @Override
-  public boolean handleUpdate(Update update) throws TelegramApiException {
+  public boolean handleUpdate(Update update, TelegramBotRegistration registration) throws TelegramApiException {
     CallbackQuery callbackQuery = update.getCallbackQuery();
     if (callbackQuery == null || callbackQuery.getMessage() == null) {
       return false;

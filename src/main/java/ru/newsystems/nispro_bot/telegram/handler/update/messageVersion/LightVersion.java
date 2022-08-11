@@ -6,6 +6,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
+import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
 
 @Component
 public class LightVersion implements Version {
@@ -17,9 +18,10 @@ public class LightVersion implements Version {
     }
 
     @Override
-    public boolean handle(Update update, boolean isLightVersion) throws TelegramApiException {
-        if (!isLightVersion) return false;
-        if (update.getMessage().getMessageId() > 0) {
+    public boolean handle(Update update, TelegramBotRegistration registration) throws TelegramApiException {
+        if (!registration.isLightVersion()) return false;
+
+        if (update.getMessage().getChatId() < 0) {
             bot.execute(SendMessage.builder()
                     .chatId(String.valueOf(update.getMessage().getChatId()))
                     .text(update.getMessage().getText())
