@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
 public class UpdateReceiveService implements Subscriber {
 
     private final VirtaBot bot;
-    private List<UpdateHandler> updateHandlers;
     private final TelegramBotRegistrationService service;
+    private List<UpdateHandler> updateHandlers;
 
     public UpdateReceiveService(VirtaBot bot, List<UpdateHandler> updateHandlers, TelegramBotRegistrationService service) {
         this.service = service;
@@ -29,7 +29,10 @@ public class UpdateReceiveService implements Subscriber {
 
     @Override
     public void handleEvent(Update update) {
-        TelegramBotRegistration registration = service.getByTelegramId(String.valueOf(update.getMessage().getChatId()));
+        Long chatId =
+                update.hasCallbackQuery() ? update.getCallbackQuery().getMessage().getChatId() : update.getMessage()
+                        .getChatId();
+        TelegramBotRegistration registration = service.getByTelegramId(String.valueOf(chatId));
 
         for (UpdateHandler updateHandler : updateHandlers) {
             try {

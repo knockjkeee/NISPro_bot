@@ -22,6 +22,7 @@ public class RegistrationForm extends FormLayout {
     Checkbox lightVersion = new Checkbox("Light Version");
     TextField idTelegram = new TextField("Telegram ID");
     TextField agentIdTelegram = new TextField("Agent Telegram ID");
+    TextField chatMembers = new TextField("Chat members");
     TextField url = new TextField("Url");
     TextField login = new TextField("Login");
     TextField password = new TextField("Password");
@@ -38,7 +39,17 @@ public class RegistrationForm extends FormLayout {
         addClassName("registration-form");
         //Validation Rules
         binder.bindInstanceFields(this);
-        add(company, lightVersion, idTelegram, agentIdTelegram, queueName, customerUser, login, password, url, createButtonsLayout());
+        HorizontalLayout buttonsLayout = createButtonsLayout();
+//        add(company, lightVersion, idTelegram, agentIdTelegram, chatMembers, queueName, customerUser, login, password, url, createButtonsLayout());
+        add(company, lightVersion, idTelegram, agentIdTelegram, chatMembers, queueName,customerUser, login, password, url, buttonsLayout);
+//        add(company, lightVersion, idTelegram, agentIdTelegram, chatMembers);
+        setResponsiveSteps(
+                new ResponsiveStep("0", 1),
+                new ResponsiveStep("250px", 2)
+        );
+        setColspan(chatMembers, 2);
+        setColspan(url, 2);
+        setColspan(buttonsLayout, 2);
     }
 
     public void setTelegramBotRegistration(TelegramBotRegistration telegramBotRegistration) {
@@ -84,7 +95,7 @@ public class RegistrationForm extends FormLayout {
     }
 
     public static abstract class ContactFormEvent extends ComponentEvent<RegistrationForm> {
-        private TelegramBotRegistration telegramEntity;
+        private final TelegramBotRegistration telegramEntity;
 
         protected ContactFormEvent(RegistrationForm source, TelegramBotRegistration telegramEntity) {
             super(source, false);

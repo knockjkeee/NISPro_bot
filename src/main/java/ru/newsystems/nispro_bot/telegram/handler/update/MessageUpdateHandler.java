@@ -11,7 +11,6 @@ import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
 import ru.newsystems.nispro_bot.base.model.dto.ParseDTO;
 import ru.newsystems.nispro_bot.base.model.state.UpdateHandlerStage;
 import ru.newsystems.nispro_bot.telegram.handler.update.messageVersion.Version;
-import ru.newsystems.nispro_bot.webservice.services.TelegramBotRegistrationService;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,21 +22,18 @@ import static ru.newsystems.nispro_bot.telegram.utils.Notification.missingRegist
 public class MessageUpdateHandler implements UpdateHandler {
 
     private final VirtaBot bot;
-    private final TelegramBotRegistrationService service;
     private final CommandParser commandParser;
 
     @Autowired
     private List<Version> messageHandlers;
 
-    public MessageUpdateHandler(VirtaBot bot, TelegramBotRegistrationService service, CommandParser commandParser) {
+    public MessageUpdateHandler(VirtaBot bot, CommandParser commandParser) {
         this.bot = bot;
-        this.service = service;
         this.commandParser = commandParser;
     }
 
     @Override
     public boolean handleUpdate(Update update, TelegramBotRegistration registration) throws TelegramApiException {
-
         Message message = getMessage(update);
         if (message == null) return false;
         String text = message.getText();
@@ -49,7 +45,6 @@ public class MessageUpdateHandler implements UpdateHandler {
                 }
                 return false;
             }
-
             for (Version messageHandler : messageHandlers) {
                 try {
                     if (messageHandler.handle(update, registration)) {
