@@ -12,6 +12,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
 import ru.newsystems.nispro_bot.base.integration.parser.CommandParser;
+import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
 import ru.newsystems.nispro_bot.base.model.domain.Article;
 import ru.newsystems.nispro_bot.base.model.domain.TicketJ;
 import ru.newsystems.nispro_bot.base.model.dto.MessageGetDTO;
@@ -26,6 +27,7 @@ import ru.newsystems.nispro_bot.base.repo.local.MessageLocalRepo;
 import ru.newsystems.nispro_bot.base.utils.StringUtil;
 import ru.newsystems.nispro_bot.telegram.handler.message.MessageHandler;
 import ru.newsystems.nispro_bot.telegram.service.RestNISService;
+import ru.newsystems.nispro_bot.webservice.services.TelegramBotRegistrationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,22 +45,28 @@ public class FullVersion implements Version {
     private final RestNISService restNISService;
     private final MessageLocalRepo localRepo;
     private final VirtaBot bot;
+    private final TelegramBotRegistrationService service;
 
     @Autowired
     private List<MessageHandler> messageHandlers;
 
-    public FullVersion(CommandParser commandParser, RestNISService restNISService, MessageLocalRepo localRepo, VirtaBot bot) {
+    public FullVersion(CommandParser commandParser, RestNISService restNISService, MessageLocalRepo localRepo, VirtaBot bot, TelegramBotRegistrationService service) {
         this.commandParser = commandParser;
         this.restNISService = restNISService;
         this.localRepo = localRepo;
         this.bot = bot;
+        this.service = service;
     }
 
     @Override
-    public boolean handle(Update update, boolean isLightVersion) throws TelegramApiException {
-        if (isLightVersion) return false;
-        if (update.getMessage().getChatId() < 0) return false;
+    public boolean handle(Update update, TelegramBotRegistration registration) throws TelegramApiException {
+        if (registration.isLightVersion() || update.getMessage().getChatId() < 0) return false;
+//        TelegramBotRegistration byAgentIdTelegram =
+//                service.getByAgentIdTelegram(String.valueOf(update.getMessage().getChatId()));
+//        if (byAgentIdTelegram == null) {
         return handleText(update);
+//        }
+//        return false;
     }
 
     private boolean handleText(Update update) throws TelegramApiException {
@@ -111,7 +119,12 @@ public class FullVersion implements Version {
                 missingRegistration(update.getMessage(), bot);
                 return false;
             }
-            sendExceptionMsg(update, text, "tk", bot);
+            TelegramBotRegistration byAgentIdTelegram =
+                    service.getByAgentIdTelegram(String.valueOf(update.getMessage().getChatId()));
+            if (byAgentIdTelegram.getId() == null) {
+                sendExceptionMsg(update, text, "tk", bot);
+            }
+
         }
         return false;
     }

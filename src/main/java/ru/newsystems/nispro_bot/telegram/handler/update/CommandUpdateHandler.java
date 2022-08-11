@@ -11,7 +11,6 @@ import ru.newsystems.nispro_bot.base.model.state.Command;
 import ru.newsystems.nispro_bot.base.model.state.UpdateHandlerStage;
 import ru.newsystems.nispro_bot.telegram.handler.command.CommandHandler;
 import ru.newsystems.nispro_bot.telegram.handler.command.CommandHandlerFactory;
-import ru.newsystems.nispro_bot.webservice.services.TelegramBotRegistrationService;
 
 import java.util.Optional;
 
@@ -23,16 +22,14 @@ public class CommandUpdateHandler implements UpdateHandler {
 
     private final CommandParser commandParser;
     private final CommandHandlerFactory commandHandlerFactory;
-    private final TelegramBotRegistrationService service;
 
-    public CommandUpdateHandler(CommandParser commandParser, CommandHandlerFactory commandHandlerFactory, TelegramBotRegistrationService service) {
+    public CommandUpdateHandler(CommandParser commandParser, CommandHandlerFactory commandHandlerFactory) {
         this.commandParser = commandParser;
         this.commandHandlerFactory = commandHandlerFactory;
-        this.service = service;
     }
 
     @Override
-    public boolean handleUpdate(Update update) throws TelegramApiException {
+    public boolean handleUpdate(Update update, TelegramBotRegistration registration) throws TelegramApiException {
         Message message = getMessage(update);
         if (message == null) return false;
         String text = message.hasPhoto() ? message.getCaption() : message.getText();
@@ -41,18 +38,17 @@ public class CommandUpdateHandler implements UpdateHandler {
             return message.hasPhoto() || message.hasDocument();
         }
 
-        TelegramBotRegistration registration = service.getByTelegramId(String.valueOf(update.getMessage().getChatId()));
-        if ((!registration.isLightVersion() && update.getMessage().getChatId() < 0) || (registration.isLightVersion() &&
-                !command.get().getCommand().getName().equals(Command.MY_ID.getName()))) {
+        boolean isMyId = !command.get().getCommand().getName().equals(Command.MY_ID.getName());
+        if ((update.getMessage().getChatId() < 0 && isMyId) || (registration.isLightVersion() && isMyId)) {
             return false;
         }
-        handleCommand(update, command.get().getCommand(), command.get().getText());
+        handleCommand(update, command.get().getCommand(), command.get().getText(), registration);
         return true;
     }
 
-    private void handleCommand(Update update, Command command, String text) throws TelegramApiException {
+    private void handleCommand(Update update, Command command, String text, TelegramBotRegistration registration) throws TelegramApiException {
         CommandHandler commandHandler = commandHandlerFactory.getHandler(command);
-        commandHandler.handleCommand(update.getMessage(), text);
+        commandHandler.handleCommand(update.getMessage(), text, registration);
     }
 
     @Override
