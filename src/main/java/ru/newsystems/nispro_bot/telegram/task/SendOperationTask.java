@@ -5,12 +5,18 @@ import lombok.Data;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
+import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
 import ru.newsystems.nispro_bot.base.model.domain.Attachment;
 import ru.newsystems.nispro_bot.base.model.dto.domain.RequestDataDTO;
+import ru.newsystems.nispro_bot.base.utils.StringUtil;
 import ru.newsystems.nispro_bot.telegram.service.RestNISService;
+import ru.newsystems.nispro_bot.webservice.services.TelegramBotRegistrationService;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static ru.newsystems.nispro_bot.telegram.utils.Action.sendCreateTicket;
 import static ru.newsystems.nispro_bot.telegram.utils.Action.sendNewComment;
@@ -20,6 +26,8 @@ import static ru.newsystems.nispro_bot.telegram.utils.Action.sendNewComment;
 @Builder
 public class SendOperationTask implements Runnable {
     private int countRedirect;
+    private Long forwardId;
+    private TelegramBotRegistrationService registrationService;
     private RequestDataDTO req;
     private boolean isSendComment;
     private Update update;
@@ -31,8 +39,23 @@ public class SendOperationTask implements Runnable {
         try {
             if (isSendComment) {
                 sendNewComment(update, req, restNISService, bot);
-            }else{
-                sendCreateTicket(update, req, restNISService, bot);
+            } else {
+                if (countRedirect != 1) {
+                    if (forwardId == null) {
+                        sendCreateTicket(update, req, restNISService, bot, null);
+                    } else {
+                        List<TelegramBotRegistration> registrationServiceAll = registrationService.findAll();
+                        List<TelegramBotRegistration> collect = registrationServiceAll.stream().filter(e -> {
+                            String chatMembers = e.getChatMembers();
+                            if (!StringUtil.isBlank(chatMembers)) {
+                                String[] split = chatMembers.split(";");
+                                return Arrays.stream(split).anyMatch(x -> Objects.equals(x, String.valueOf(forwardId)));
+                            }
+                            return false;
+                        }).collect(Collectors.toList());
+                        sendCreateTicket(update, req, restNISService, bot, Long.valueOf(collect.get(0).getIdTelegram()));
+                    }
+                }
             }
         } catch (TelegramApiException e) {
             e.printStackTrace();
@@ -45,7 +68,7 @@ public class SendOperationTask implements Runnable {
         if (attaches == null && attach != null) {
             result.add(attach);
             req.setAttaches(result);
-        } else if (attaches != null){
+        } else if (attaches != null) {
             result.addAll(attaches);
             result.add(attach);
             req.setAttaches(result);

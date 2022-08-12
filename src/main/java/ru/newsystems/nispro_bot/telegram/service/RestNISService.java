@@ -102,7 +102,7 @@ public class RestNISService {
         }
     }
 
-    public Optional<TicketUpdateCreateDTO> getTicketOperationCreate(RequestDataDTO data, Long msgId, String userName) {
+    public Optional<TicketUpdateCreateDTO> getTicketOperationCreate(RequestDataDTO data, Long msgId, String userName, Long forwardId) {
         TelegramBotRegistration registration = registration(msgId);
         if (registration.getCompany() == null) {
             TicketUpdateCreateDTO temp = new TicketUpdateCreateDTO();
@@ -112,7 +112,7 @@ public class RestNISService {
             return Optional.of(temp);
         }
         String urlCreate = getUrl("TicketCreate?UserLogin=", registration);
-        HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerCreate(data, registration, userName);
+        HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerCreate(data, registration, userName, forwardId);
         ResponseEntity<TicketUpdateCreateDTO> response =
                 restTemplate.exchange(urlCreate, HttpMethod.POST, requestEntity, TicketUpdateCreateDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
@@ -180,7 +180,7 @@ public class RestNISService {
         return new HttpEntity<>(map, getHttpHeaders(MediaType.APPLICATION_JSON));
     }
 
-    private HttpEntity<Map<String, Object>> getRequestHeaderTickerCreate(RequestDataDTO data, TelegramBotRegistration registration, String userName) {
+    private HttpEntity<Map<String, Object>> getRequestHeaderTickerCreate(RequestDataDTO data, TelegramBotRegistration registration, String userName, Long forwardId) {
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> article = new HashMap<>();
         Map<String, Object> ticket = new HashMap<>();
@@ -205,7 +205,11 @@ public class RestNISService {
 
         Map<String, Object> dynamic_field = new HashMap<>();
         dynamic_field.put("Name", "Telegram");
-        dynamic_field.put("Value", registration.getIdTelegram());
+        if (forwardId == null) {
+            dynamic_field.put("Value", registration.getIdTelegram());
+        } else {
+            dynamic_field.put("Value", forwardId);
+        }
         dynamic.add(dynamic_field);
         map.put("DynamicField", dynamic);
 //

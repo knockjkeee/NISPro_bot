@@ -57,16 +57,17 @@ public class FullVersion implements Version {
 
     @Override
     public boolean handle(Update update, TelegramBotRegistration registration) throws TelegramApiException {
-        if (registration.isLightVersion() || update.getMessage().getChatId() < 0) return false;
+//        if (registration.isLightVersion() || update.getMessage().getChatId() < 0) return false;
+        if (update.getMessage().getChatId() < 0) return false;
 
         bot.execute(SendChatAction.builder()
                 .chatId(String.valueOf(update.getMessage().getChatId()))
                 .action(ActionType.TYPING.toString())
                 .build());
-        return handleText(update);
+        return handleText(update, registration);
     }
 
-    private boolean handleText(Update update) throws TelegramApiException {
+    private boolean handleText(Update update, TelegramBotRegistration registration) throws TelegramApiException {
         String text = update.getMessage().getText();
         long tk = getIdByTicketNumber(text);
         Optional<TicketSearchDTO> ticketSearch =
@@ -76,8 +77,10 @@ public class FullVersion implements Version {
             return getDataByTicketID(update, text, ticketSearch);
         } else {
             boolean isRedirect = update.getMessage().getForwardFrom() != null;
-            if (prepareFunctionalMsg(update, isRedirect)) return true;
-            if (checkInnerAttr(update, ticketSearch)) return false;
+            if (!registration.isLightVersion()) {
+                if (prepareFunctionalMsg(update, isRedirect)) return true;
+            }
+            if (checkInnerAttrFiles(update, ticketSearch)) return false;
             TelegramBotRegistration byAgentIdTelegram = service.getByAgentIdTelegram(String.valueOf(update.getMessage()
                     .getChatId()));
             if (byAgentIdTelegram.getId() == null) {
@@ -89,7 +92,7 @@ public class FullVersion implements Version {
         return false;
     }
 
-    private boolean checkInnerAttr(Update update, Optional<TicketSearchDTO> ticketSearch) throws TelegramApiException {
+    private boolean checkInnerAttrFiles(Update update, Optional<TicketSearchDTO> ticketSearch) throws TelegramApiException {
         if (update.getMessage().hasPhoto()) {
             return true;
         }

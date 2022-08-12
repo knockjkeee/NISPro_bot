@@ -31,7 +31,7 @@ public class NotificationNewArticle implements Runnable {
                     .filter(i -> i.getIsVisibleForCustomer() == 1 && i.getLoginCountRegistration() == 0)
                     .forEach(newArticle -> {
                         try {
-                            int i = Integer.parseInt(newArticle.getIdTelegram());
+                            Long id = Long.parseLong(newArticle.getIdTelegram());
                             sendNotification(newArticle);
                         } catch (NumberFormatException ignored) {
                         }
@@ -50,15 +50,26 @@ public class NotificationNewArticle implements Runnable {
                 .build()));
 
         try {
-            bot.execute(SendMessage.builder()
-                    .chatId(newArticle.getIdTelegram())
-                    .text("<pre>✉️ Новое сообщение \nЗаявке № " + newArticle.getTicketNumber() + "\n</pre>" +
-                            "<pre>От: " + newArticle.getCreateBy() + "</pre>" + "\n<b>Тема: </b><i>" +
-                            newArticle.getSubject() + "</i>\n<b>Сообщение: </b><i>" + newArticle.getBody() + "</i>")
-                    .parseMode(ParseMode.HTML)
-                    .protectContent(true)
-                    .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
-                    .build());
+            if (Long.parseLong(newArticle.getIdTelegram()) < 0) {
+                bot.execute(SendMessage.builder()
+                        .chatId(newArticle.getIdTelegram())
+                        .text("<pre>✉️ Новое сообщение \nЗаявке № " + newArticle.getTicketNumber() + "\n</pre>" +
+                                "<pre>От: " + newArticle.getCreateBy() + "</pre>" + "\n<b>Тема: </b><i>" +
+                                newArticle.getSubject() + "</i>\n<b>Сообщение: </b><i>" + newArticle.getBody() + "</i>")
+                        .parseMode(ParseMode.HTML)
+                        .protectContent(true)
+                        .build());
+            } else {
+                bot.execute(SendMessage.builder()
+                        .chatId(newArticle.getIdTelegram())
+                        .text("<pre>✉️ Новое сообщение \nЗаявке № " + newArticle.getTicketNumber() + "\n</pre>" +
+                                "<pre>От: " + newArticle.getCreateBy() + "</pre>" + "\n<b>Тема: </b><i>" +
+                                newArticle.getSubject() + "</i>\n<b>Сообщение: </b><i>" + newArticle.getBody() + "</i>")
+                        .parseMode(ParseMode.HTML)
+                        .protectContent(true)
+                        .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
+                        .build());
+            }
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
