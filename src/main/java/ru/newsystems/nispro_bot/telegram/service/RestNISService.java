@@ -14,6 +14,7 @@ import ru.newsystems.nispro_bot.base.model.dto.domain.TicketGetDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketSearchDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketUpdateCreateDTO;
 import ru.newsystems.nispro_bot.base.model.state.ErrorState;
+import ru.newsystems.nispro_bot.base.utils.StringUtil;
 import ru.newsystems.nispro_bot.webservice.services.TelegramBotRegistrationService;
 
 import java.util.*;
@@ -44,14 +45,13 @@ public class RestNISService {
         }
         String urlGet = getUrl("TicketGet?UserLogin=", registration);
         HttpEntity<MultiValueMap<String, Object>> requestEntity = getRequestHeaderTickerGet(id);
-        ResponseEntity<TicketGetDTO> response = restTemplate.exchange(urlGet, HttpMethod.POST, requestEntity, TicketGetDTO.class);
+        ResponseEntity<TicketGetDTO> response =
+                restTemplate.exchange(urlGet, HttpMethod.POST, requestEntity, TicketGetDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
             TicketGetDTO body = response.getBody();
             List<TicketJ> resCollect = body.getTickets().stream().map(ticket -> {
-                List<Article> collect = ticket.getArticles()
-                        .stream()
-                        .filter(article -> article.getIiVisibleForCustomer() == 1)
-                        .collect(Collectors.toList());
+                List<Article> collect = ticket.getArticles().stream().filter(article ->
+                        article.getIiVisibleForCustomer() == 1).collect(Collectors.toList());
                 ticket.setArticles(collect);
                 return ticket;
             }).collect(Collectors.toList());
@@ -73,7 +73,8 @@ public class RestNISService {
         }
         String urlSearch = getUrl("TicketSearch?UserLogin=", registration);
         HttpEntity<MultiValueMap<String, Object>> requestEntity = getRequestHeaderTickerSearch(listTicketNumbers);
-        ResponseEntity<TicketSearchDTO> response = restTemplate.exchange(urlSearch, HttpMethod.POST, requestEntity, TicketSearchDTO.class);
+        ResponseEntity<TicketSearchDTO> response =
+                restTemplate.exchange(urlSearch, HttpMethod.POST, requestEntity, TicketSearchDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
             return Optional.ofNullable(response.getBody());
         } else {
@@ -92,7 +93,8 @@ public class RestNISService {
         }
         String urlUpdate = getUrl("TicketUpdate?UserLogin=", registration);
         HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerUpdate(data, userName);
-        ResponseEntity<TicketUpdateCreateDTO> response = restTemplate.exchange(urlUpdate, HttpMethod.POST, requestEntity, TicketUpdateCreateDTO.class);
+        ResponseEntity<TicketUpdateCreateDTO> response =
+                restTemplate.exchange(urlUpdate, HttpMethod.POST, requestEntity, TicketUpdateCreateDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
             return Optional.ofNullable(response.getBody());
         } else {
@@ -100,7 +102,7 @@ public class RestNISService {
         }
     }
 
-    public Optional<TicketUpdateCreateDTO> getTicketOperationCreate(RequestDataDTO data, Long msgId, String userName) {
+    public Optional<TicketUpdateCreateDTO> getTicketOperationCreate(RequestDataDTO data, Long msgId, String userName, TelegramBotRegistration regGroup) {
         TelegramBotRegistration registration = registration(msgId);
         if (registration.getCompany() == null) {
             TicketUpdateCreateDTO temp = new TicketUpdateCreateDTO();
@@ -110,8 +112,9 @@ public class RestNISService {
             return Optional.of(temp);
         }
         String urlCreate = getUrl("TicketCreate?UserLogin=", registration);
-        HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerCreate(data, registration, userName);
-        ResponseEntity<TicketUpdateCreateDTO> response = restTemplate.exchange(urlCreate, HttpMethod.POST, requestEntity, TicketUpdateCreateDTO.class);
+        HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerCreate(data, registration, userName, regGroup);
+        ResponseEntity<TicketUpdateCreateDTO> response =
+                restTemplate.exchange(urlCreate, HttpMethod.POST, requestEntity, TicketUpdateCreateDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
             return Optional.ofNullable(response.getBody());
         } else {
@@ -131,7 +134,8 @@ public class RestNISService {
 
         String url = getUrl("TicketSearch?UserLogin=", registration);
         HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerSearch();
-        ResponseEntity<TicketSearchDTO> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, TicketSearchDTO.class);
+        ResponseEntity<TicketSearchDTO> response =
+                restTemplate.exchange(url, HttpMethod.POST, requestEntity, TicketSearchDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
             return Optional.ofNullable(response.getBody());
         } else {
@@ -149,7 +153,7 @@ public class RestNISService {
         return new HttpEntity<>(map, getHttpHeaders(MediaType.APPLICATION_JSON));
     }
 
-    private   HttpEntity<Map<String, Object>> getRequestHeaderTickerUpdate(RequestDataDTO data, String userName) {
+    private HttpEntity<Map<String, Object>> getRequestHeaderTickerUpdate(RequestDataDTO data, String userName) {
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> arc = new HashMap<>();
 
@@ -176,30 +180,44 @@ public class RestNISService {
         return new HttpEntity<>(map, getHttpHeaders(MediaType.APPLICATION_JSON));
     }
 
-    private  HttpEntity<Map<String, Object>> getRequestHeaderTickerCreate(RequestDataDTO data, TelegramBotRegistration registration, String userName) {
+    private HttpEntity<Map<String, Object>> getRequestHeaderTickerCreate(RequestDataDTO data, TelegramBotRegistration registration, String userName, TelegramBotRegistration regGroup) {
         Map<String, Object> map = new HashMap<>();
-        Map<String, Object> arc = new HashMap<>();
+        Map<String, Object> article = new HashMap<>();
         Map<String, Object> ticket = new HashMap<>();
         List<Object> dynamic = new ArrayList<>();
+        Map<String, Object> dynamic_field = new HashMap<>();
 
-        ticket.put("Queue", registration.getQueueName());
+        String title = !StringUtil.isBlank(data.getTitle()) ?
+                data.getTitle() + " [автор: " + userName + "]." :
+                data.getArticle().getBody() + " [автор: " + userName + "].";
+        //"Тикет создан с помощью telegram bot [автор: " + userName + "].");
+
+//        ticket.put("Queue", registration.getQueueName());
         ticket.put("Priority", "3 normal");
-        ticket.put("CustomerUser", registration.getCustomerUser());
-        ticket.put("Title", "Тикет создан с помощью telegram bot [автор: " + userName + "].");
+//        ticket.put("CustomerUser", registration.getCustomerUser());
+        ticket.put("Title", title);
         ticket.put("State", "open");
         ticket.put("Type", "Unclassified");
-        map.put("Ticket", ticket);
 
-        arc.put("ContentType", "text/plain; charset=utf8");
-        arc.put("Subject", "Комментарий добавлен с помощью telegram bot [автор: " + userName + "].");
-        arc.put("Body", data.getArticle().getBody());
-        map.put("Article", arc);
-
-        Map<String, Object> dynamic_field = new HashMap<>();
         dynamic_field.put("Name", "Telegram");
-        dynamic_field.put("Value", registration.getIdTelegram());
+        if (regGroup == null) {
+            dynamic_field.put("Value", registration.getIdTelegram());
+            ticket.put("Queue", registration.getQueueName());
+            ticket.put("CustomerUser", registration.getCustomerUser());
+        } else {
+            dynamic_field.put("Value", regGroup.getIdTelegram());
+            ticket.put("Queue", regGroup.getQueueName());
+            ticket.put("CustomerUser", regGroup.getCustomerUser());
+        }
+
+        map.put("Ticket", ticket);
         dynamic.add(dynamic_field);
         map.put("DynamicField", dynamic);
+
+        article.put("ContentType", "text/plain; charset=utf8");
+        article.put("Subject", "Комментарий добавлен с помощью telegram bot [автор: " + userName + "].");
+        article.put("Body", data.getArticle().getBody());
+        map.put("Article", article);
 //
         if (data.getAttaches() != null && data.getAttaches().size() > 0) {
             List<Object> obj = new ArrayList<>();
@@ -234,7 +252,7 @@ public class RestNISService {
         return headers;
     }
 
-    public  TelegramBotRegistration registration(Long id) {
+    public TelegramBotRegistration registration(Long id) {
         TelegramBotRegistration byTelegramId = service.getByTelegramId(String.valueOf(id));
         byTelegramId.setUrl(byTelegramId.getUrl() + GENERICINTERFACE_PL_WEBSERVICE_TICKET);
         return byTelegramId;

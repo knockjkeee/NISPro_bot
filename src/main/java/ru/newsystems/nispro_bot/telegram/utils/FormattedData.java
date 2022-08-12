@@ -36,33 +36,36 @@ public class FormattedData {
         return prepareAttach(base64, contentType, fileName);
     }
 
-    public static RequestDataDTO prepareReqWithMessage(List<String> replyTexts, String body) {
+    public static RequestDataDTO prepareReqWithMessage(List<String> replyTexts, String body, boolean isRedirect) {
         RequestDataDTO req = new RequestDataDTO();
         req.setTicketNumber(replyTexts.size() > 1 ? Long.parseLong(replyTexts.get(1)) : 0);
+        if (isRedirect) {
+            req.setTitle(body);
+        }
         Article article = new Article();
         article.setBody(body);
         req.setArticle(article);
         return req;
     }
 
-    public static RequestDataDTO prepareReqWithPhoto(Update update, List<String> replyTexts, String body, VirtaBot bot) throws TelegramApiException {
+    public static RequestDataDTO prepareReqWithPhoto(Update update, List<String> replyTexts, String body, VirtaBot bot, boolean isRedirect) throws TelegramApiException {
         String filePath = getFilePath(update, bot);
         String base64 = getBase64(filePath, bot);
         String fileName = filePath.split("/")[1];
         String contentType = ContentTypeState.getState(fileName.split("\\.")[1])
                 .getContent();
-        return prepareReqWithAttachment(replyTexts, body, base64, contentType, fileName);
+        return prepareReqWithAttachment(replyTexts, body, base64, contentType, fileName, isRedirect);
     }
 
-    public static RequestDataDTO prepareReqWithDocument(Update update, List<String> replyTexts, String body, VirtaBot bot) throws TelegramApiException {
+    public static RequestDataDTO prepareReqWithDocument(Update update, List<String> replyTexts, String body, VirtaBot bot, boolean isRedirect) throws TelegramApiException {
         Document document = update.getMessage()
                 .getDocument();
         String base64 = prepareBase64(document.getFileId(), false, bot);
-        return prepareReqWithAttachment(replyTexts, body, base64, document.getMimeType(), document.getFileName());
+        return prepareReqWithAttachment(replyTexts, body, base64, document.getMimeType(), document.getFileName(),isRedirect);
     }
 
-    private static RequestDataDTO prepareReqWithAttachment(List<String> replyTexts, String body, String base64, String contentType, String fileName) {
-        RequestDataDTO req = prepareReqWithMessage(replyTexts, body);
+    private static RequestDataDTO prepareReqWithAttachment(List<String> replyTexts, String body, String base64, String contentType, String fileName, boolean isRedirect) {
+        RequestDataDTO req = prepareReqWithMessage(replyTexts, body, isRedirect);
         Attachment attach = prepareAttach(base64, contentType, fileName);
         req.setAttaches(List.of(attach));
         return req;

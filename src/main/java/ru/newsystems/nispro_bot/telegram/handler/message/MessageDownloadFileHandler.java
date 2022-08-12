@@ -1,6 +1,5 @@
 package ru.newsystems.nispro_bot.telegram.handler.message;
 
-import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ActionType;
 import org.telegram.telegrambots.meta.api.methods.send.SendChatAction;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
@@ -21,8 +20,9 @@ import java.util.List;
 import static ru.newsystems.nispro_bot.telegram.utils.Notification.resultOperationToChat;
 
 
-@Component
-public class MessageDownloadFileHandler implements MessageHandler {
+//@Component
+//public class MessageDownloadFileHandler implements MessageHandler {
+public class MessageDownloadFileHandler {
 
     private final MessageLocalRepo localRepo;
     private final VirtaBot bot;
@@ -32,8 +32,7 @@ public class MessageDownloadFileHandler implements MessageHandler {
         this.bot = bot;
     }
 
-    @Override
-    public boolean handleUpdate(Update update) throws TelegramApiException {
+    public boolean handleUpdate(Update update, boolean isRedirect) throws TelegramApiException {
         String text = update.getMessage().getText();
         if (text == null) return false;
         if (MessageState.getState(text).equals(MessageState.DOWLOADFILE)) {

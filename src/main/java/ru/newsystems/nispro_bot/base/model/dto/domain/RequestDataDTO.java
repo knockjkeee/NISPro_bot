@@ -11,6 +11,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RequestDataDTO {
     private Long ticketNumber;
+    private String title;
     private Article article;
     List<Attachment> attaches;
 }

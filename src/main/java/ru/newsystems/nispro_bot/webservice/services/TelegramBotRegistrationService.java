@@ -14,6 +14,10 @@ public class TelegramBotRegistrationService {
 
     private final TelegramBotRegistrationRepo repo;
 
+    public List<TelegramBotRegistration> findAll() {
+        return repo.findAll();
+    }
+
     public TelegramBotRegistration getByTelegramId(String id) {
         Optional<TelegramBotRegistration> byIdTelegram = repo.findByIdTelegram(id);
         return byIdTelegram.orElseGet(TelegramBotRegistration::new);

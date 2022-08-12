@@ -28,15 +28,18 @@ public class MyIDCommandHandler implements CommandHandler {
         String txt, chatId;
         if (registration.isLightVersion() && !StringUtil.isBlank(registration.getAgentIdTelegram())) {
             chatId = registration.getAgentIdTelegram();
-            txt = "<pre>Id группы компании " + registration.getCompany() + ": " + message.getChatId() + "</pre>";
+            txt = "\nId группы: " + message.getChatId();
             ArrayList<ChatMember> execute =
                     bot.execute(GetChatAdministrators.builder().chatId(String.valueOf(message.getChatId())).build());
-            String membersGroup = "<pre>Участники группы от компании: " + registration.getCompany() + "</pre>\n" +
+            String membersGroup = "<pre>Участники группы от компании " + registration.getCompany() + ":</pre>\n" +
                     execute.stream()
                             .map(e -> e.getUser().getFirstName() + " " + e.getUser().getLastName() + ", isBot: " +
                                     e.getUser().getIsBot() + ", id: " + e.getUser().getId())
-                            .collect(Collectors.joining("\n"));
+                            .collect(Collectors.joining("\n")) + "\n<pre>Данные для регистрации:</pre>\n" +
+                    execute.stream().map(e -> String.valueOf(e.getUser().getId())).collect(Collectors.joining(";")) +
+                    txt;
             bot.execute(SendMessage.builder().chatId(chatId).parseMode("html").text(membersGroup).build());
+            return;
         } else {
             chatId = message.getChatId().toString();
             txt = "<pre>Ваш id : " + message.getChatId() + "</pre>";

@@ -11,7 +11,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
-import ru.newsystems.nispro_bot.base.integration.parser.CommandParser;
 import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
 import ru.newsystems.nispro_bot.base.model.domain.Article;
 import ru.newsystems.nispro_bot.base.model.domain.TicketJ;
@@ -41,7 +40,6 @@ import static ru.newsystems.nispro_bot.telegram.utils.Notification.*;
 @Component
 public class FullVersion implements Version {
 
-    private final CommandParser commandParser;
     private final RestNISService restNISService;
     private final MessageLocalRepo localRepo;
     private final VirtaBot bot;
@@ -50,8 +48,7 @@ public class FullVersion implements Version {
     @Autowired
     private List<MessageHandler> messageHandlers;
 
-    public FullVersion(CommandParser commandParser, RestNISService restNISService, MessageLocalRepo localRepo, VirtaBot bot, TelegramBotRegistrationService service) {
-        this.commandParser = commandParser;
+    public FullVersion(RestNISService restNISService, MessageLocalRepo localRepo, VirtaBot bot, TelegramBotRegistrationService service) {
         this.restNISService = restNISService;
         this.localRepo = localRepo;
         this.bot = bot;
@@ -60,79 +57,92 @@ public class FullVersion implements Version {
 
     @Override
     public boolean handle(Update update, TelegramBotRegistration registration) throws TelegramApiException {
-        if (registration.isLightVersion() || update.getMessage().getChatId() < 0) return false;
-//        TelegramBotRegistration byAgentIdTelegram =
-//                service.getByAgentIdTelegram(String.valueOf(update.getMessage().getChatId()));
-//        if (byAgentIdTelegram == null) {
-        return handleText(update);
-//        }
-//        return false;
-    }
+//        if (registration.isLightVersion() || update.getMessage().getChatId() < 0) return false;
+        if (update.getMessage().getChatId() < 0) return false;
 
-    private boolean handleText(Update update) throws TelegramApiException {
         bot.execute(SendChatAction.builder()
                 .chatId(String.valueOf(update.getMessage().getChatId()))
                 .action(ActionType.TYPING.toString())
                 .build());
+        return handleText(update, registration);
+    }
+
+    private boolean handleText(Update update, TelegramBotRegistration registration) throws TelegramApiException {
         String text = update.getMessage().getText();
         long tk = getIdByTicketNumber(text);
         Optional<TicketSearchDTO> ticketSearch =
                 tk != 0 ? restNISService.getTicketOperationSearch(List.of(tk), update.getMessage()
                         .getChatId()) : Optional.empty();
         if (ticketSearch.isPresent()) {
-            List<Long> ticketsId = ticketSearch.get().getTicketIDs();
-            Optional<TicketGetDTO> ticket =
-                    restNISService.getTicketOperationGet(ticketsId, update.getMessage().getChatId());
-            if (ticket.isPresent()) {
-                if (ticket.get().getError() == null) {
-                    sendTicketTextMsg(update, ticket.get().getTickets().get(0));
-                    updateLocalRepo(update, ticket);
-                    return true;
-                } else {
-                    if (ticket.get().getError() != null &&
-                            ticket.get().getError().getErrorCode().equals(ErrorState.NOT_AUTHORIZED.getMsg())) {
-                        missingRegistration(update.getMessage(), bot);
-                        return false;
-                    }
-                    sendErrorMsg(bot, update, text, ticket.get().getError());
-                    return false;
-                }
-            } else {
-                sendExceptionMsg(update, text, "id", bot);
-                return false;
-            }
+            return getDataByTicketID(update, text, ticketSearch);
         } else {
-            for (MessageHandler messageHandler : messageHandlers) {
-                try {
-                    if (messageHandler.handleUpdate(update)) {
-                        return true;
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            boolean isRedirect = update.getMessage().getForwardFrom() != null;
+            if (!registration.isLightVersion()) {
+                if (prepareFunctionalMsg(update, isRedirect)) return true;
             }
-            if (update.getMessage().hasPhoto()) {
-                return false;
-            }
-            if (ticketSearch.isPresent() &&
-                    ticketSearch.get().getError().getErrorCode().equals(ErrorState.NOT_AUTHORIZED.getCode())) {
-                missingRegistration(update.getMessage(), bot);
-                return false;
-            }
-            TelegramBotRegistration byAgentIdTelegram =
-                    service.getByAgentIdTelegram(String.valueOf(update.getMessage().getChatId()));
+            if (checkInnerAttrFiles(update, ticketSearch)) return false;
+            TelegramBotRegistration byAgentIdTelegram = service.getByAgentIdTelegram(String.valueOf(update.getMessage()
+                    .getChatId()));
             if (byAgentIdTelegram.getId() == null) {
                 sendExceptionMsg(update, text, "tk", bot);
+            } else {
+                if (prepareFunctionalMsg(update, true)) return true;
             }
-
         }
         return false;
     }
 
+    private boolean checkInnerAttrFiles(Update update, Optional<TicketSearchDTO> ticketSearch) throws TelegramApiException {
+        if (update.getMessage().hasPhoto()) {
+            return true;
+        }
+        if (ticketSearch.isPresent() &&
+                ticketSearch.get().getError().getErrorCode().equals(ErrorState.NOT_AUTHORIZED.getCode())) {
+            missingRegistration(update.getMessage(), bot);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean prepareFunctionalMsg(Update update, boolean isRedirect) {
+        for (MessageHandler messageHandler : messageHandlers) {
+            try {
+                if (messageHandler.handleUpdate(update, isRedirect)) {
+                    return true;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+    private boolean getDataByTicketID(Update update, String text, Optional<TicketSearchDTO> ticketSearch) throws TelegramApiException {
+        List<Long> ticketsId = ticketSearch.get().getTicketIDs();
+        Optional<TicketGetDTO> ticket = restNISService.getTicketOperationGet(ticketsId, update.getMessage()
+                .getChatId());
+        if (ticket.isPresent()) {
+            if (ticket.get().getError() == null) {
+                sendTicketTextMsg(update, ticket.get().getTickets().get(0));
+                updateLocalRepo(update, ticket);
+                return true;
+            } else {
+                if (ticket.get().getError() != null &&
+                        ticket.get().getError().getErrorCode().equals(ErrorState.NOT_AUTHORIZED.getMsg())) {
+                    missingRegistration(update.getMessage(), bot);
+                    return false;
+                }
+                sendErrorMsg(bot, update, text, ticket.get().getError());
+                return false;
+            }
+        } else {
+            sendExceptionMsg(update, text, "id", bot);
+            return false;
+        }
+    }
+
     private void sendTicketTextMsg(Update update, TicketJ ticket) throws TelegramApiException {
-
         String resultText = prepareText(ticket);
-
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
         buttons.add(List.of(InlineKeyboardButton.builder()
                 .text(ReplyKeyboardButton.COMMENT.getLabel() + " Отправить комментарий")
