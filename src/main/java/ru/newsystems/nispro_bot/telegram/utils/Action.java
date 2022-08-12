@@ -4,6 +4,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
+import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
 import ru.newsystems.nispro_bot.base.model.dto.domain.RequestDataDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketUpdateCreateDTO;
 import ru.newsystems.nispro_bot.base.model.state.ErrorState;
@@ -46,11 +47,11 @@ public class Action {
         }
     }
 
-    public static void sendCreateTicket(Update update, RequestDataDTO req, RestNISService restNISService, VirtaBot bot, Long forwardId) throws TelegramApiException {
+    public static void sendCreateTicket(Update update, RequestDataDTO req, RestNISService restNISService, VirtaBot bot, TelegramBotRegistration registration) throws TelegramApiException {
         Optional<TicketUpdateCreateDTO> ticketOperationUpdate =
                 restNISService.getTicketOperationCreate(req, update.getMessage().getChatId(),
                         update.getMessage().getFrom().getFirstName() + "/" +
-                                update.getMessage().getFrom().getUserName(), forwardId);
+                                update.getMessage().getFrom().getUserName(), registration);
         if (ticketOperationUpdate.isPresent() && ticketOperationUpdate.get().getError() == null) {
             resultOperationToChat(update, bot, true);
             receiveReqNum(update, bot, ticketOperationUpdate.get().getTicketNumber());

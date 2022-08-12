@@ -102,7 +102,7 @@ public class RestNISService {
         }
     }
 
-    public Optional<TicketUpdateCreateDTO> getTicketOperationCreate(RequestDataDTO data, Long msgId, String userName, Long forwardId) {
+    public Optional<TicketUpdateCreateDTO> getTicketOperationCreate(RequestDataDTO data, Long msgId, String userName, TelegramBotRegistration regGroup) {
         TelegramBotRegistration registration = registration(msgId);
         if (registration.getCompany() == null) {
             TicketUpdateCreateDTO temp = new TicketUpdateCreateDTO();
@@ -112,7 +112,7 @@ public class RestNISService {
             return Optional.of(temp);
         }
         String urlCreate = getUrl("TicketCreate?UserLogin=", registration);
-        HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerCreate(data, registration, userName, forwardId);
+        HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerCreate(data, registration, userName, regGroup);
         ResponseEntity<TicketUpdateCreateDTO> response =
                 restTemplate.exchange(urlCreate, HttpMethod.POST, requestEntity, TicketUpdateCreateDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
@@ -180,38 +180,44 @@ public class RestNISService {
         return new HttpEntity<>(map, getHttpHeaders(MediaType.APPLICATION_JSON));
     }
 
-    private HttpEntity<Map<String, Object>> getRequestHeaderTickerCreate(RequestDataDTO data, TelegramBotRegistration registration, String userName, Long forwardId) {
+    private HttpEntity<Map<String, Object>> getRequestHeaderTickerCreate(RequestDataDTO data, TelegramBotRegistration registration, String userName, TelegramBotRegistration regGroup) {
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> article = new HashMap<>();
         Map<String, Object> ticket = new HashMap<>();
         List<Object> dynamic = new ArrayList<>();
+        Map<String, Object> dynamic_field = new HashMap<>();
 
         String title = !StringUtil.isBlank(data.getTitle()) ?
                 data.getTitle() + " [автор: " + userName + "]." :
                 data.getArticle().getBody() + " [автор: " + userName + "].";
         //"Тикет создан с помощью telegram bot [автор: " + userName + "].");
-        ticket.put("Queue", registration.getQueueName());
+
+//        ticket.put("Queue", registration.getQueueName());
         ticket.put("Priority", "3 normal");
-        ticket.put("CustomerUser", registration.getCustomerUser());
+//        ticket.put("CustomerUser", registration.getCustomerUser());
         ticket.put("Title", title);
         ticket.put("State", "open");
         ticket.put("Type", "Unclassified");
+
+        dynamic_field.put("Name", "Telegram");
+        if (regGroup == null) {
+            dynamic_field.put("Value", registration.getIdTelegram());
+            ticket.put("Queue", registration.getQueueName());
+            ticket.put("CustomerUser", registration.getCustomerUser());
+        } else {
+            dynamic_field.put("Value", regGroup.getIdTelegram());
+            ticket.put("Queue", regGroup.getQueueName());
+            ticket.put("CustomerUser", regGroup.getCustomerUser());
+        }
+
         map.put("Ticket", ticket);
+        dynamic.add(dynamic_field);
+        map.put("DynamicField", dynamic);
 
         article.put("ContentType", "text/plain; charset=utf8");
         article.put("Subject", "Комментарий добавлен с помощью telegram bot [автор: " + userName + "].");
         article.put("Body", data.getArticle().getBody());
         map.put("Article", article);
-
-        Map<String, Object> dynamic_field = new HashMap<>();
-        dynamic_field.put("Name", "Telegram");
-        if (forwardId == null) {
-            dynamic_field.put("Value", registration.getIdTelegram());
-        } else {
-            dynamic_field.put("Value", forwardId);
-        }
-        dynamic.add(dynamic_field);
-        map.put("DynamicField", dynamic);
 //
         if (data.getAttaches() != null && data.getAttaches().size() > 0) {
             List<Object> obj = new ArrayList<>();

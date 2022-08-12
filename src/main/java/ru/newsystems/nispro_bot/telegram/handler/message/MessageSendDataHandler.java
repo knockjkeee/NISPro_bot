@@ -16,6 +16,7 @@ import ru.newsystems.nispro_bot.telegram.task.SendLocalRepo;
 import ru.newsystems.nispro_bot.telegram.task.SendOperationTask;
 import ru.newsystems.nispro_bot.webservice.services.TelegramBotRegistrationService;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
@@ -152,7 +153,10 @@ public class MessageSendDataHandler implements MessageHandler {
                 task.getReq().setArticle(article);
             }
             if (forwardUser != null) {
-                task.setForwardId(forwardUser.getId());
+                //task.setForwardId(forwardUser.getId());
+                List<Long> forwardId = task.getForwardId();
+                forwardId.add(forwardUser.getId());
+                task.setForwardId(forwardId);
             }
         }
         ScheduledFuture<?> schedule = executor.schedule(task, DELAY_AFTER_ADD_MSG, TimeUnit.SECONDS);
@@ -169,11 +173,15 @@ public class MessageSendDataHandler implements MessageHandler {
                 .restNISService(restNISService)
                 .registrationService(registrationService)
                 .isSendComment(isSendComment)
+                .selfId(update.getMessage().getChatId())
                 .build();
         if (isRedirect) {
             task.setCountRedirect(task.getCountRedirect() + 1);
-            if (forwardUser != null) {
-                task.setForwardId(forwardUser.getId());
+            if (forwardUser == null) {
+//                task.setForwardId(forwardUser.getId());
+                List<Long> forwardId = new ArrayList<>();
+//                forwardId.add(forwardUser.getId());
+                task.setForwardId(forwardId);
             }
         }
         ScheduledFuture<?> schedule = executor.schedule(task, DELAY_FOR_ADD_DOCS_OR_PIC, TimeUnit.SECONDS);

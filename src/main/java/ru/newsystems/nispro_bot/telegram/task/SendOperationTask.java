@@ -26,7 +26,8 @@ import static ru.newsystems.nispro_bot.telegram.utils.Action.sendNewComment;
 @Builder
 public class SendOperationTask implements Runnable {
     private int countRedirect;
-    private Long forwardId;
+    private List<Long> forwardId;
+    private Long selfId;
     private TelegramBotRegistrationService registrationService;
     private RequestDataDTO req;
     private boolean isSendComment;
@@ -36,6 +37,7 @@ public class SendOperationTask implements Runnable {
 
     @Override
     public void run() {
+        List<Long> collectForwardId = forwardId.stream().filter(e -> !Objects.equals(e, selfId)).collect(Collectors.toList());
         try {
             if (isSendComment) {
                 sendNewComment(update, req, restNISService, bot);
@@ -49,11 +51,11 @@ public class SendOperationTask implements Runnable {
                             String chatMembers = e.getChatMembers();
                             if (!StringUtil.isBlank(chatMembers)) {
                                 String[] split = chatMembers.split(";");
-                                return Arrays.stream(split).anyMatch(x -> Objects.equals(x, String.valueOf(forwardId)));
+                                return Arrays.stream(split).anyMatch(x -> Objects.equals(x, String.valueOf(collectForwardId.get(0))));
                             }
                             return false;
                         }).collect(Collectors.toList());
-                        sendCreateTicket(update, req, restNISService, bot, Long.valueOf(collect.get(0).getIdTelegram()));
+                        sendCreateTicket(update, req, restNISService, bot, collect.get(0));
                     }
                 }
             }
