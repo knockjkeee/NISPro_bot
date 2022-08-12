@@ -37,7 +37,6 @@ public class SendOperationTask implements Runnable {
 
     @Override
     public void run() {
-        List<Long> collectForwardId = forwardId.stream().filter(e -> !Objects.equals(e, selfId)).collect(Collectors.toList());
         try {
             if (isSendComment) {
                 sendNewComment(update, req, restNISService, bot);
@@ -46,6 +45,7 @@ public class SendOperationTask implements Runnable {
                     if (forwardId == null) {
                         sendCreateTicket(update, req, restNISService, bot, null);
                     } else {
+                        List<Long> collectForwardId = forwardId.stream().filter(e -> !Objects.equals(e, selfId)).collect(Collectors.toList());
                         List<TelegramBotRegistration> registrationServiceAll = registrationService.findAll();
                         List<TelegramBotRegistration> collect = registrationServiceAll.stream().filter(e -> {
                             String chatMembers = e.getChatMembers();
