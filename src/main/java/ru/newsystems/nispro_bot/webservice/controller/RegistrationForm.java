@@ -10,6 +10,7 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
@@ -25,7 +26,7 @@ public class RegistrationForm extends FormLayout {
     TextField chatMembers = new TextField("Chat members");
     TextField url = new TextField("Url");
     TextField login = new TextField("Login");
-    TextField password = new TextField("Password");
+    PasswordField password = new PasswordField("Password");
     TextField queueName = new TextField("Queue Name");
     TextField customerUser = new TextField("Customer User");
     Binder<TelegramBotRegistration> binder = new BeanValidationBinder<>(TelegramBotRegistration.class);
