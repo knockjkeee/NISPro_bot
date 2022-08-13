@@ -2,6 +2,7 @@ package ru.newsystems.nispro_bot.telegram.task;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.extern.log4j.Log4j2;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
@@ -24,6 +25,7 @@ import static ru.newsystems.nispro_bot.telegram.utils.Action.sendNewComment;
 
 @Data
 @Builder
+@Log4j2
 public class SendOperationTask implements Runnable {
     private int countRedirect;
     private List<Long> forwardId;
@@ -45,22 +47,31 @@ public class SendOperationTask implements Runnable {
                     if (forwardId == null) {
                         sendCreateTicket(update, req, restNISService, bot, null);
                     } else {
-                        List<Long> collectForwardId = forwardId.stream().filter(e -> !Objects.equals(e, selfId)).collect(Collectors.toList());
+                        List<Long> collectForwardId =
+                                forwardId.stream().filter(e -> !Objects.equals(e, selfId)).collect(Collectors.toList());
                         List<TelegramBotRegistration> registrationServiceAll = registrationService.findAll();
                         List<TelegramBotRegistration> collect = registrationServiceAll.stream().filter(e -> {
                             String chatMembers = e.getChatMembers();
                             if (!StringUtil.isBlank(chatMembers)) {
                                 String[] split = chatMembers.split(";");
-                                return Arrays.stream(split).anyMatch(x -> Objects.equals(x, String.valueOf(collectForwardId.get(0))));
+                                return Arrays.stream(split)
+                                        .anyMatch(x -> Objects.equals(x, String.valueOf(collectForwardId.get(0))));
                             }
                             return false;
                         }).collect(Collectors.toList());
-                        sendCreateTicket(update, req, restNISService, bot, collect.get(0));
+                        if (collect.size() == 1) {
+                            sendCreateTicket(update, req, restNISService, bot, collect.get(0));
+                        } else {
+                            log.error(
+                                    "SendCreateTicket operation by group fail, size registration collect by members group: " +
+                                            collect.size() + ", self id: " + selfId);
+                        }
+
                     }
                 }
             }
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            log.error("Error - run by SendOperationTask, stack trace: " + e.getLocalizedMessage());
         }
     }
 

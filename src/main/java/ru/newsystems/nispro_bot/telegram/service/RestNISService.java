@@ -1,5 +1,6 @@
 package ru.newsystems.nispro_bot.telegram.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -23,8 +24,8 @@ import java.util.stream.Collectors;
 @Service
 public class RestNISService {
 
-    public static final String GENERICINTERFACE_PL_WEBSERVICE_TICKET =
-            "/otrs/nph-genericinterface.pl/Webservice/Ticket/";
+    @Value("${nis.pro.path}")
+    private String GENERICINTERFACE_PL_WEBSERVICE_TICKET;
 
     private final RestTemplate restTemplate;
     private final TelegramBotRegistrationService service;
