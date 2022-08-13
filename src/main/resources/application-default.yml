@@ -6,15 +6,11 @@ org:
     simpleLogger:
       defaultLogLevel: debug
 
-
 spring:
   datasource:
-#    url: mysql://virta:virta@192.168.246.218:3306/virta
-#    mysqlx://
-#    192.168.241.22
-    url: jdbc:mysql://192.168.246.218:3306/virta
-    username: virta
-    password: virta
+    url: jdbc:mysql://192.168.***.***:***/***
+    username: ***
+    password: ***
   jpa:
     hibernate:
       ddl-auto: update
@@ -27,7 +23,4 @@ spring:
 
 nis:
   pro:
-    login: PRa
-    password: pr
-    url: http://192.168.246.218
     path: /otrs/nph-genericinterface.pl/Webservice/Ticket/
