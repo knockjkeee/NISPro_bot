@@ -64,7 +64,7 @@ public class SendOperationTask implements Runnable {
                         } else {
                             log.error(
                                     "SendCreateTicket operation by group fail, size registration collect by members group: " +
-                                            collect.size() + ", self id: " + selfId);
+                                            collect.size() + ", self id: " + selfId + ", error group id: " + collectForwardId.get(0));
                         }
 
                     }
