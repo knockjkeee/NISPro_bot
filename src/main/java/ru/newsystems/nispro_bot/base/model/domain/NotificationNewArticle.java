@@ -53,7 +53,7 @@ public class NotificationNewArticle implements Runnable {
             if (Long.parseLong(newArticle.getIdTelegram()) < 0) {
                 bot.execute(SendMessage.builder()
                         .chatId(newArticle.getIdTelegram())
-                        .text("<pre>✉️ Новое сообщение \nЗаявке № " + newArticle.getTicketNumber() + "\n</pre>" +
+                        .text("<pre>✉️ Новое сообщение \nЗаявка № " + newArticle.getTicketNumber() + "\n</pre>" +
                                 "<pre>От: " + newArticle.getCreateBy() + "</pre>" + "\n<b>Тема: </b><i>" +
                                 newArticle.getSubject() + "</i>\n<b>Сообщение: </b><i>" + newArticle.getBody() + "</i>")
                         .parseMode(ParseMode.HTML)
@@ -62,7 +62,7 @@ public class NotificationNewArticle implements Runnable {
             } else {
                 bot.execute(SendMessage.builder()
                         .chatId(newArticle.getIdTelegram())
-                        .text("<pre>✉️ Новое сообщение \nЗаявке № " + newArticle.getTicketNumber() + "\n</pre>" +
+                        .text("<pre>✉️ Новое сообщение \nЗаявка № " + newArticle.getTicketNumber() + "\n</pre>" +
                                 "<pre>От: " + newArticle.getCreateBy() + "</pre>" + "\n<b>Тема: </b><i>" +
                                 newArticle.getSubject() + "</i>\n<b>Сообщение: </b><i>" + newArticle.getBody() + "</i>")
                         .parseMode(ParseMode.HTML)
