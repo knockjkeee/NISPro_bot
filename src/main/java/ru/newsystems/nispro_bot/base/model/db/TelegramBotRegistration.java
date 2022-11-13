@@ -21,41 +21,44 @@ public class TelegramBotRegistration {
 //    @NotEmpty
     private Long id;
 
-    @Column(name = "company", nullable = false, length = 100)
+    @Column(name = "company", nullable = false)
     @NotEmpty
     private String company;
 
-    @Column(name = "id_telegram", nullable = false, length = 100)
+    @Column(name = "id_telegram", nullable = false)
     @NotEmpty
     private String idTelegram;
 
-    @Column(name = "agent_idtTelegram", nullable = false, length = 100)
+    @Column(name = "agent_idtTelegram", nullable = false)
     private String agentIdTelegram;
 
-    @Column(name = "chat_members", nullable = false, length = 100)
+    @Column(name = "chat_members", nullable = false)
     private String chatMembers;
 
-    @Column(name = "url", nullable = false, length = 100)
+    @Column(name = "url", nullable = false)
     @NotEmpty
     private String url;
 
-    @Column(name = "login", nullable = false, length = 100)
+    @Column(name = "login", nullable = false)
     @NotEmpty
     private String login;
 
-    @Column(name = "password", nullable = false, length = 100)
+    @Column(name = "password", nullable = false)
     @NotEmpty
     private String password;
 
-    @Column(name = "queue_name", nullable = false, length = 100)
+    @Column(name = "queue_name", nullable = false)
     @NotEmpty
     private String queueName;
 
-    @Column(name = "customer_User", nullable = false, length = 100)
+    @Column(name = "customer_User", nullable = false)
     @NotEmpty
     private String customerUser;
 
-    @Column(name = "light_version", nullable = false, length = 100)
+    @Column(name = "light_version", nullable = false)
     private boolean lightVersion;
+
+    @Column(name = "customer_login", nullable = false)
+    private boolean customerLogin;
 
 }

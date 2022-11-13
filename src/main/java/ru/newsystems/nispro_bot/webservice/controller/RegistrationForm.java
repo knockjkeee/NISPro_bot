@@ -25,6 +25,7 @@ public class RegistrationForm extends FormLayout {
     TextField agentIdTelegram = new TextField("Agent Telegram ID");
     TextField chatMembers = new TextField("Chat members");
     TextField url = new TextField("Url");
+    Checkbox customerLogin = new Checkbox("Login and password of the Client");
     TextField login = new TextField("Login");
     PasswordField password = new PasswordField("Password");
     TextField queueName = new TextField("Queue Name");
@@ -41,14 +42,10 @@ public class RegistrationForm extends FormLayout {
         //Validation Rules
         binder.bindInstanceFields(this);
         HorizontalLayout buttonsLayout = createButtonsLayout();
-//        add(company, lightVersion, idTelegram, agentIdTelegram, chatMembers, queueName, customerUser, login, password, url, createButtonsLayout());
-        add(company, lightVersion, idTelegram, agentIdTelegram, chatMembers, queueName,customerUser, login, password, url, buttonsLayout);
-//        add(company, lightVersion, idTelegram, agentIdTelegram, chatMembers);
-        setResponsiveSteps(
-                new ResponsiveStep("0", 1),
-                new ResponsiveStep("250px", 2)
-        );
+        add(company, lightVersion, idTelegram, agentIdTelegram, chatMembers, queueName, customerUser, login, password, customerLogin, url, buttonsLayout);
+        setResponsiveSteps(new ResponsiveStep("0", 1), new ResponsiveStep("250px", 2));
         setColspan(chatMembers, 2);
+        setColspan(customerLogin, 2);
         setColspan(url, 2);
         setColspan(buttonsLayout, 2);
     }
