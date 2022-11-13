@@ -43,7 +43,8 @@ public class RestNISService {
             temp.setError(error);
             return Optional.of(temp);
         }
-        String urlGet = getUrl("TicketGet?UserLogin=", registration);
+        String urlGet = getUrl(
+                "TicketGet?" + (registration.isCustomerLogin() ? "CustomerUserLogin=" : "UserLogin="), registration);
         HttpEntity<MultiValueMap<String, Object>> requestEntity = getRequestHeaderTickerGet(id);
         ResponseEntity<TicketGetDTO> response =
                 restTemplate.exchange(urlGet, HttpMethod.POST, requestEntity, TicketGetDTO.class);
@@ -70,7 +71,7 @@ public class RestNISService {
             temp.setError(error);
             return Optional.of(temp);
         }
-        String urlSearch = getUrl("TicketSearch?UserLogin=", registration);
+        String urlSearch = getUrl("TicketSearch?" + (registration.isCustomerLogin() ? "CustomerUserLogin=" : "UserLogin="), registration);
         HttpEntity<MultiValueMap<String, Object>> requestEntity = getRequestHeaderTickerSearch(listTicketNumbers);
         ResponseEntity<TicketSearchDTO> response =
                 restTemplate.exchange(urlSearch, HttpMethod.POST, requestEntity, TicketSearchDTO.class);
@@ -90,7 +91,7 @@ public class RestNISService {
             temp.setError(error);
             return Optional.of(temp);
         }
-        String urlUpdate = getUrl("TicketUpdate?UserLogin=", registration);
+        String urlUpdate = getUrl("TicketUpdate?" + (registration.isCustomerLogin() ? "CustomerUserLogin=" : "UserLogin="), registration);
         HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerUpdate(data, userName);
         ResponseEntity<TicketUpdateCreateDTO> response =
                 restTemplate.exchange(urlUpdate, HttpMethod.POST, requestEntity, TicketUpdateCreateDTO.class);
@@ -111,9 +112,11 @@ public class RestNISService {
             return Optional.of(temp);
         }
         String urlCreate =
-                !Objects.nonNull(regGroup) ? getUrl("TicketCreate?UserLogin=", registration) : getUrlByGroup(registration);
-        HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerCreate(data, registration, userName, regGroup);
-        ResponseEntity<TicketUpdateCreateDTO> response =  restTemplate.exchange(urlCreate, HttpMethod.POST, requestEntity, TicketUpdateCreateDTO.class);
+                !Objects.nonNull(regGroup) ? getUrl("TicketCreate?" + (registration.isCustomerLogin() ? "CustomerUserLogin=" : "UserLogin="), registration) : getUrlByGroup(registration);
+        HttpEntity<Map<String, Object>> requestEntity =
+                getRequestHeaderTickerCreate(data, registration, userName, regGroup);
+        ResponseEntity<TicketUpdateCreateDTO> response =
+                restTemplate.exchange(urlCreate, HttpMethod.POST, requestEntity, TicketUpdateCreateDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
             return Optional.ofNullable(response.getBody());
         } else {
@@ -131,7 +134,7 @@ public class RestNISService {
             return Optional.of(temp);
         }
 
-        String url = getUrl("TicketSearch?UserLogin=", registration);
+        String url = getUrl("TicketSearch?" + (registration.isCustomerLogin() ? "CustomerUserLogin=" : "UserLogin="), registration);
         HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerSearch();
         ResponseEntity<TicketSearchDTO> response =
                 restTemplate.exchange(url, HttpMethod.POST, requestEntity, TicketSearchDTO.class);
@@ -204,7 +207,7 @@ public class RestNISService {
             ticket.put("Queue", registration.getQueueName());
             ticket.put("CustomerUser", registration.getCustomerUser());
         } else {
-            map.put("UserLogin", regGroup.getLogin());
+            map.put(regGroup.isCustomerLogin() ? "CustomerUserLogin" : "UserLogin", regGroup.getLogin());
             map.put("Password", regGroup.getPassword());
             dynamic_field.put("Value", regGroup.getIdTelegram());
             ticket.put("Queue", regGroup.getQueueName());
