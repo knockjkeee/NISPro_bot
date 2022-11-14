@@ -24,11 +24,10 @@ import java.util.stream.Collectors;
 @Service
 public class RestNISService {
 
-    @Value("${nis.pro.path}")
-    private String GENERICINTERFACE_PL_WEBSERVICE_TICKET;
-
     private final RestTemplate restTemplate;
     private final TelegramBotRegistrationService service;
+    @Value("${nis.pro.path}")
+    private String GENERICINTERFACE_PL_WEBSERVICE_TICKET;
 
     public RestNISService(RestTemplate restTemplate, TelegramBotRegistrationService service) {
         this.restTemplate = restTemplate;
@@ -44,18 +43,18 @@ public class RestNISService {
             temp.setError(error);
             return Optional.of(temp);
         }
-        String urlGet = getUrl("TicketGet?UserLogin=", registration);
+        String urlGet = getUrl(
+                "TicketGet?" + (registration.isCustomerLogin() ? "CustomerUserLogin=" : "UserLogin="), registration);
         HttpEntity<MultiValueMap<String, Object>> requestEntity = getRequestHeaderTickerGet(id);
         ResponseEntity<TicketGetDTO> response =
                 restTemplate.exchange(urlGet, HttpMethod.POST, requestEntity, TicketGetDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
             TicketGetDTO body = response.getBody();
-            List<TicketJ> resCollect = body.getTickets().stream().map(ticket -> {
+            List<TicketJ> resCollect = body.getTickets() != null ? body.getTickets().stream().peek(ticket -> {
                 List<Article> collect = ticket.getArticles().stream().filter(article ->
                         article.getIiVisibleForCustomer() == 1).collect(Collectors.toList());
                 ticket.setArticles(collect);
-                return ticket;
-            }).collect(Collectors.toList());
+            }).collect(Collectors.toList()) : null;
             body.setTickets(resCollect);
             return Optional.of(body);
         } else {
@@ -72,7 +71,7 @@ public class RestNISService {
             temp.setError(error);
             return Optional.of(temp);
         }
-        String urlSearch = getUrl("TicketSearch?UserLogin=", registration);
+        String urlSearch = getUrl("TicketSearch?" + (registration.isCustomerLogin() ? "CustomerUserLogin=" : "UserLogin="), registration);
         HttpEntity<MultiValueMap<String, Object>> requestEntity = getRequestHeaderTickerSearch(listTicketNumbers);
         ResponseEntity<TicketSearchDTO> response =
                 restTemplate.exchange(urlSearch, HttpMethod.POST, requestEntity, TicketSearchDTO.class);
@@ -92,7 +91,7 @@ public class RestNISService {
             temp.setError(error);
             return Optional.of(temp);
         }
-        String urlUpdate = getUrl("TicketUpdate?UserLogin=", registration);
+        String urlUpdate = getUrl("TicketUpdate?" + (registration.isCustomerLogin() ? "CustomerUserLogin=" : "UserLogin="), registration);
         HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerUpdate(data, userName);
         ResponseEntity<TicketUpdateCreateDTO> response =
                 restTemplate.exchange(urlUpdate, HttpMethod.POST, requestEntity, TicketUpdateCreateDTO.class);
@@ -112,8 +111,10 @@ public class RestNISService {
             temp.setError(error);
             return Optional.of(temp);
         }
-        String urlCreate = getUrl("TicketCreate?UserLogin=", registration);
-        HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerCreate(data, registration, userName, regGroup);
+        String urlCreate =
+                !Objects.nonNull(regGroup) ? getUrl("TicketCreate?" + (registration.isCustomerLogin() ? "CustomerUserLogin=" : "UserLogin="), registration) : getUrlByGroup(registration);
+        HttpEntity<Map<String, Object>> requestEntity =
+                getRequestHeaderTickerCreate(data, registration, userName, regGroup);
         ResponseEntity<TicketUpdateCreateDTO> response =
                 restTemplate.exchange(urlCreate, HttpMethod.POST, requestEntity, TicketUpdateCreateDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
@@ -133,7 +134,7 @@ public class RestNISService {
             return Optional.of(temp);
         }
 
-        String url = getUrl("TicketSearch?UserLogin=", registration);
+        String url = getUrl("TicketSearch?" + (registration.isCustomerLogin() ? "CustomerUserLogin=" : "UserLogin="), registration);
         HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerSearch();
         ResponseEntity<TicketSearchDTO> response =
                 restTemplate.exchange(url, HttpMethod.POST, requestEntity, TicketSearchDTO.class);
@@ -165,7 +166,7 @@ public class RestNISService {
         map.put("TicketNumber", data.getTicketNumber());
         map.put("CommunicationChannelID", 4);
         map.put("Article", arc);
-//
+
         if (data.getAttaches() != null && data.getAttaches().size() > 0) {
             List<Object> obj = new ArrayList<>();
 
@@ -206,6 +207,8 @@ public class RestNISService {
             ticket.put("Queue", registration.getQueueName());
             ticket.put("CustomerUser", registration.getCustomerUser());
         } else {
+            map.put(regGroup.isCustomerLogin() ? "CustomerUserLogin" : "UserLogin", regGroup.getLogin());
+            map.put("Password", regGroup.getPassword());
             dynamic_field.put("Value", regGroup.getIdTelegram());
             ticket.put("Queue", regGroup.getQueueName());
             ticket.put("CustomerUser", regGroup.getCustomerUser());
@@ -219,7 +222,7 @@ public class RestNISService {
         article.put("Subject", "Комментарий добавлен с помощью telegram bot [автор: " + userName + "].");
         article.put("Body", data.getArticle().getBody());
         map.put("Article", article);
-//
+
         if (data.getAttaches() != null && data.getAttaches().size() > 0) {
             List<Object> obj = new ArrayList<>();
             data.getAttaches().forEach(e -> {
@@ -233,7 +236,6 @@ public class RestNISService {
         }
         return new HttpEntity<>(map, getHttpHeaders(MediaType.APPLICATION_JSON));
     }
-
 
     private HttpEntity<MultiValueMap<String, Object>> getRequestHeaderTickerSearch(List<Long> listTicketNumbers) {
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
@@ -259,9 +261,12 @@ public class RestNISService {
         return byTelegramId;
     }
 
-
     private String getUrl(String operation, TelegramBotRegistration registration) {
         return registration.getUrl() + operation + registration.getLogin() + "&Password=" + registration.getPassword();
+    }
+
+    private String getUrlByGroup(TelegramBotRegistration registration) {
+        return registration.getUrl() + "TicketCreate";
     }
 
 }
