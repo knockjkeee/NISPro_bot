@@ -35,7 +35,7 @@ public class NotificationNewArticle implements Runnable {
         List<TelegramReceiveNotificationNewArticle> newArticles = repo.findAll();
         if (newArticles.size() > 0) {
             newArticles.stream()
-                    .filter(i -> i.getIsVisibleForCustomer() == 1 && i.getLoginCountRegistration() == 0)
+                    .filter(i -> i.getIsVisibleForCustomer() == 1)
                     .forEach(newArticle -> {
                         try {
                             Long id = Long.parseLong(newArticle.getIdTelegram());
@@ -77,7 +77,8 @@ public class NotificationNewArticle implements Runnable {
                         .parseMode(ParseMode.HTML)
                         .protectContent(true)
                         .build());
-            } else {
+                sendFile(newArticle, article);
+            } else if (newArticle.getLoginCountRegistration() == 0){
                 bot.execute(SendMessage.builder()
                         .chatId(newArticle.getIdTelegram())
                         .text("<pre>✉️ Новое сообщение \nЗаявка № " + newArticle.getTicketNumber() + "\n</pre>" +
@@ -87,20 +88,25 @@ public class NotificationNewArticle implements Runnable {
                         .protectContent(true)
                         .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
                         .build());
+                sendFile(newArticle, article);
             }
 
-            if (article == null || (article.getAttachments() == null || article.getAttachments().isEmpty())) return;
-            article.getAttachments().forEach(e -> {
-                try {
-                    prepareFileToSend(newArticle.getIdTelegram(), e);
-                } catch (TelegramApiException ex) {
-                    ex.printStackTrace();
-                }
-            });
+
 
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
+    }
+
+    private void sendFile(TelegramReceiveNotificationNewArticle newArticle, Article article) {
+        if (article == null || (article.getAttachments() == null || article.getAttachments().isEmpty())) return;
+        article.getAttachments().forEach(e -> {
+            try {
+                prepareFileToSend(newArticle.getIdTelegram(), e);
+            } catch (TelegramApiException ex) {
+                ex.printStackTrace();
+            }
+        });
     }
 
 
