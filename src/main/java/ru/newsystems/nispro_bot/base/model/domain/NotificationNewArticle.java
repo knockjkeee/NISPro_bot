@@ -54,9 +54,11 @@ public class NotificationNewArticle implements Runnable {
         Article article = null;
         if (currentTicket.isPresent()){
             List<Long> ticketIDs = currentTicket.get().getTicketIDs();
-            Optional<TicketGetDTO> ticketOperationGet = rest.getTicketOperationGet(ticketIDs, Long.valueOf(newArticle.getIdTelegram()));
-            if (ticketOperationGet.isPresent()) {
-                article = ticketOperationGet.get().getTickets().get(0).getArticles().stream().filter(e -> Objects.equals(e.getArticleID(), newArticle.getArticleId())).findFirst().get();
+            if (ticketIDs != null){
+                Optional<TicketGetDTO> ticketOperationGet = rest.getTicketOperationGet(ticketIDs, Long.valueOf(newArticle.getIdTelegram()));
+                if (ticketOperationGet.isPresent()) {
+                    article = ticketOperationGet.get().getTickets().get(0).getArticles().stream().filter(e -> Objects.equals(e.getArticleID(), newArticle.getArticleId())).findFirst().get();
+                }
             }
         }
 
@@ -77,7 +79,7 @@ public class NotificationNewArticle implements Runnable {
                         .parseMode(ParseMode.HTML)
                         .protectContent(true)
                         .build());
-                sendFile(newArticle, article);
+                if (article != null) sendFile(newArticle, article);
             } else if (newArticle.getLoginCountRegistration() == 0){
                 bot.execute(SendMessage.builder()
                         .chatId(newArticle.getIdTelegram())
@@ -88,11 +90,8 @@ public class NotificationNewArticle implements Runnable {
                         .protectContent(true)
                         .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
                         .build());
-                sendFile(newArticle, article);
+                if (article != null) sendFile(newArticle, article);
             }
-
-
-
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
