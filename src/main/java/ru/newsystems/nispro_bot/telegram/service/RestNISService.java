@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
 import ru.newsystems.nispro_bot.base.model.domain.Article;
 import ru.newsystems.nispro_bot.base.model.domain.Error;
@@ -20,6 +21,8 @@ import ru.newsystems.nispro_bot.webservice.services.TelegramBotRegistrationServi
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static ru.newsystems.nispro_bot.base.utils.NumberUtil.getIdByTicketNumber;
 
 @Service
 public class RestNISService {
@@ -82,7 +85,7 @@ public class RestNISService {
         }
     }
 
-    public Optional<TicketUpdateCreateDTO> getTicketOperationUpdate(RequestDataDTO data, Long msgId, String userName) {
+    public Optional<TicketUpdateCreateDTO> getTicketOperationUpdate(Update update, RequestDataDTO data, Long msgId, String userName) {
         TelegramBotRegistration registration = registration(msgId);
         if (registration.getCompany() == null) {
             TicketUpdateCreateDTO temp = new TicketUpdateCreateDTO();
@@ -92,7 +95,7 @@ public class RestNISService {
             return Optional.of(temp);
         }
         String urlUpdate = getUrl("TicketUpdate?" + (registration.isCustomerLogin() ? "CustomerUserLogin=" : "UserLogin="), registration);
-        HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerUpdate(data, userName);
+        HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerUpdate(update, data, userName);
         ResponseEntity<TicketUpdateCreateDTO> response =
                 restTemplate.exchange(urlUpdate, HttpMethod.POST, requestEntity, TicketUpdateCreateDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
@@ -102,7 +105,7 @@ public class RestNISService {
         }
     }
 
-    public Optional<TicketUpdateCreateDTO> getTicketOperationCreate(RequestDataDTO data, Long msgId, String userName, TelegramBotRegistration regGroup) {
+    public Optional<TicketUpdateCreateDTO> getTicketOperationCreate(Update update, RequestDataDTO data, Long msgId, String userName, TelegramBotRegistration regGroup) {
         TelegramBotRegistration registration = registration(msgId);
         if (registration.getCompany() == null) {
             TicketUpdateCreateDTO temp = new TicketUpdateCreateDTO();
@@ -114,7 +117,7 @@ public class RestNISService {
         String urlCreate =
                 !Objects.nonNull(regGroup) ? getUrl("TicketCreate?" + (registration.isCustomerLogin() ? "CustomerUserLogin=" : "UserLogin="), registration) : getUrlByGroup(registration);
         HttpEntity<Map<String, Object>> requestEntity =
-                getRequestHeaderTickerCreate(data, registration, userName, regGroup);
+                getRequestHeaderTickerCreate(update, data, registration, userName, regGroup);
         ResponseEntity<TicketUpdateCreateDTO> response =
                 restTemplate.exchange(urlCreate, HttpMethod.POST, requestEntity, TicketUpdateCreateDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
@@ -155,12 +158,20 @@ public class RestNISService {
         return new HttpEntity<>(map, getHttpHeaders(MediaType.APPLICATION_JSON));
     }
 
-    private HttpEntity<Map<String, Object>> getRequestHeaderTickerUpdate(RequestDataDTO data, String userName) {
+    private HttpEntity<Map<String, Object>> getRequestHeaderTickerUpdate(Update update, RequestDataDTO data, String userName) {
+
+        String title = getCurrentTitleFromTicket(update, data);
+
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> arc = new HashMap<>();
 
         arc.put("ContentType", "text/plain; charset=utf8");
-        arc.put("Subject", "Комментарий добавлен с помощью telegram bot [автор: " + userName + "].");
+        if (title.isEmpty()) {
+            arc.put("Subject", "Комментарий добавлен с помощью telegram bot [автор: " + userName + "].");
+        }else {
+            arc.put("Subject", title);
+        }
+
         arc.put("Body", data.getArticle().getBody());
 
         map.put("TicketNumber", data.getTicketNumber());
@@ -182,7 +193,24 @@ public class RestNISService {
         return new HttpEntity<>(map, getHttpHeaders(MediaType.APPLICATION_JSON));
     }
 
-    private HttpEntity<Map<String, Object>> getRequestHeaderTickerCreate(RequestDataDTO data, TelegramBotRegistration registration, String userName, TelegramBotRegistration regGroup) {
+    private String getCurrentTitleFromTicket(Update update, RequestDataDTO data) {
+        String title;
+        try {
+            long tk = getIdByTicketNumber(String.valueOf(data.getTicketNumber()));
+            Optional<TicketSearchDTO> ticketSearch = getTicketOperationSearch(List.of(tk), update.getMessage().getChatId());
+            List<Long> ticketsId = ticketSearch.get().getTicketIDs();
+            Optional<TicketGetDTO> ticket = getTicketOperationGet(ticketsId, update.getMessage().getChatId());
+            title = ticket.get().getTickets().get(0).getTitle();
+        } catch (Exception e) {
+            title = "";
+        }
+        return title;
+    }
+
+    private HttpEntity<Map<String, Object>> getRequestHeaderTickerCreate(Update update, RequestDataDTO data, TelegramBotRegistration registration, String userName, TelegramBotRegistration regGroup) {
+
+        String titleTicket = getCurrentTitleFromTicket(update, data);
+
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> article = new HashMap<>();
         Map<String, Object> ticket = new HashMap<>();
@@ -219,7 +247,12 @@ public class RestNISService {
         map.put("DynamicField", dynamic);
 
         article.put("ContentType", "text/plain; charset=utf8");
-        article.put("Subject", "Комментарий добавлен с помощью telegram bot [автор: " + userName + "].");
+//        article.put("Subject", "Комментарий добавлен с помощью telegram bot [автор: " + userName + "].");
+        if (titleTicket.isEmpty()) {
+            article.put("Subject", title);
+        }else {
+            article.put("Subject", titleTicket);
+        }
         article.put("Body", data.getArticle().getBody());
         map.put("Article", article);
 
@@ -245,7 +278,10 @@ public class RestNISService {
 
     public HttpEntity<Map<String, Object>> getRequestHeaderTickerSearch() {
         Map<String, Object> map = new HashMap<>();
+        Map<String, Object> dynamicField = new HashMap<>();
+        dynamicField.put("Empty", 0);
         map.put("States", "open");
+        map.put("DynamicField_Telegram", dynamicField);
         return new HttpEntity<>(map, getHttpHeaders(MediaType.APPLICATION_JSON));
     }
 
