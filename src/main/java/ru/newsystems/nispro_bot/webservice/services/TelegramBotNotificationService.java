@@ -43,13 +43,6 @@ public class TelegramBotNotificationService {
                 .collect(Collectors.toList());
         if (collect.size() > 0) return;
 
-//        bot.execute(SendMessage.builder()
-//                .chatId("167381172")
-//                .text(named + "\n" + "all -> " + all.size()  + "\ncollect -> " + collect.size() + "\narticle.getArticleID -> " + article.getArticleID())
-//                .parseMode(ParseMode.HTML)
-//                .protectContent(true)
-//                .build());
-
         TelegramReceiveNotificationNewArticle notificationNewArticle = new TelegramReceiveNotificationNewArticle();
         notificationNewArticle.setArticleId(article.getArticleID());
         notificationNewArticle.setBody(article.getBody());
