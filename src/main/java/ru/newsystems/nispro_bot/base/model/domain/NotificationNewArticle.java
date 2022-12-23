@@ -79,7 +79,7 @@ public class NotificationNewArticle implements Runnable {
                         .parseMode(ParseMode.HTML)
                         .protectContent(true)
                         .build());
-                if (article != null) sendFile(newArticle, article);
+//                if (article != null) sendFile(newArticle, article);
             } else if (newArticle.getLoginCountRegistration() == 0){
                 bot.execute(SendMessage.builder()
                         .chatId(newArticle.getIdTelegram())
@@ -90,10 +90,12 @@ public class NotificationNewArticle implements Runnable {
                         .protectContent(true)
                         .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
                         .build());
-                if (article != null) sendFile(newArticle, article);
+
             }
         } catch (TelegramApiException e) {
             e.printStackTrace();
+        } finally {
+            if (article != null) sendFile(newArticle, article);
         }
     }
 

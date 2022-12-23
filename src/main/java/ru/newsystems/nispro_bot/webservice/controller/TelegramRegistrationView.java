@@ -2,6 +2,7 @@ package ru.newsystems.nispro_bot.webservice.controller;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -10,18 +11,22 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
+import ru.newsystems.nispro_bot.security.SecurityService;
 import ru.newsystems.nispro_bot.webservice.services.TelegramBotRegistrationService;
 
 @Route("")
 @PageTitle("Telegram registration")
 public class TelegramRegistrationView extends VerticalLayout {
 
+    private final SecurityService securityService;
+
     Grid<TelegramBotRegistration> grid = new Grid<>(TelegramBotRegistration.class);
     TextField filterText = new TextField();
     RegistrationForm registrationForm;
     TelegramBotRegistrationService service;
 
-    public TelegramRegistrationView(TelegramBotRegistrationService service) {
+    public TelegramRegistrationView(TelegramBotRegistrationService service, SecurityService securityService) {
+        this.securityService = securityService;
         this.service = service;
         addClassName("telegram_registration");
         setSizeFull();
@@ -75,17 +80,25 @@ public class TelegramRegistrationView extends VerticalLayout {
     }
 
     private HorizontalLayout getToolbar() {
+
         filterText.setPlaceholder("Filter by company name...");
-        filterText.setMinWidth("220px");
+        filterText.setMinWidth("420px");
         filterText.setClearButtonVisible(true);
         filterText.setValueChangeMode(ValueChangeMode.LAZY);
         filterText.addValueChangeListener(e -> updateList());
 
         Button addContactButton = new Button("Add registration");
-        addContactButton.addClickListener(click -> addContact());
-//        addContactButton.setMinWidth("250px");
 
-        HorizontalLayout toolbar = new HorizontalLayout(filterText, addContactButton);
+        Button logout = new Button("Log out", e -> securityService.logout());
+        logout.addThemeVariants(ButtonVariant.LUMO_ERROR);
+        addContactButton.addClickListener(click -> addContact());
+
+
+        HorizontalLayout toolbar = new HorizontalLayout(logout, filterText, addContactButton );
+        toolbar.setSizeFull();
+        toolbar.setHeight("50");
+        logout.getElement().getStyle().set("margin-right", "auto");
+
         toolbar.addClassName("toolbar");
         return toolbar;
     }
