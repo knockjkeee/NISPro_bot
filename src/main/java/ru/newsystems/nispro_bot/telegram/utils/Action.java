@@ -31,7 +31,7 @@ public class Action {
 
     public static void sendNewComment(Update update, RequestDataDTO req, RestNISService restNISService, VirtaBot bot) throws TelegramApiException {
         Optional<TicketUpdateCreateDTO> ticketOperationUpdate =
-                restNISService.getTicketOperationUpdate(req, update.getMessage().getChatId(),
+                restNISService.getTicketOperationUpdate(update, req, update.getMessage().getChatId(),
                         update.getMessage().getFrom().getFirstName() + "/" +
                                 update.getMessage().getFrom().getUserName());
         if (ticketOperationUpdate.isPresent() && ticketOperationUpdate.get().getError() == null) {
@@ -49,7 +49,7 @@ public class Action {
 
     public static void sendCreateTicket(Update update, RequestDataDTO req, RestNISService restNISService, VirtaBot bot, TelegramBotRegistration registration) throws TelegramApiException {
         Optional<TicketUpdateCreateDTO> ticketOperationUpdate =
-                restNISService.getTicketOperationCreate(req, update.getMessage().getChatId(),
+                restNISService.getTicketOperationCreate(update, req, update.getMessage().getChatId(),
                         update.getMessage().getFrom().getFirstName() + "/" +
                                 update.getMessage().getFrom().getUserName(), registration);
         if (ticketOperationUpdate.isPresent() && ticketOperationUpdate.get().getError() == null) {

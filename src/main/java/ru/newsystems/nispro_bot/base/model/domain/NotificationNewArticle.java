@@ -35,7 +35,7 @@ public class NotificationNewArticle implements Runnable {
         List<TelegramReceiveNotificationNewArticle> newArticles = repo.findAll();
         if (newArticles.size() > 0) {
             newArticles.stream()
-                    .filter(i -> i.getIsVisibleForCustomer() == 1 && i.getLoginCountRegistration() == 0)
+                    .filter(i -> i.getIsVisibleForCustomer() == 1)
                     .forEach(newArticle -> {
                         try {
                             Long id = Long.parseLong(newArticle.getIdTelegram());
@@ -54,9 +54,11 @@ public class NotificationNewArticle implements Runnable {
         Article article = null;
         if (currentTicket.isPresent()){
             List<Long> ticketIDs = currentTicket.get().getTicketIDs();
-            Optional<TicketGetDTO> ticketOperationGet = rest.getTicketOperationGet(ticketIDs, Long.valueOf(newArticle.getIdTelegram()));
-            if (ticketOperationGet.isPresent()) {
-                article = ticketOperationGet.get().getTickets().get(0).getArticles().stream().filter(e -> Objects.equals(e.getArticleID(), newArticle.getArticleId())).findFirst().get();
+            if (ticketIDs != null){
+                Optional<TicketGetDTO> ticketOperationGet = rest.getTicketOperationGet(ticketIDs, Long.valueOf(newArticle.getIdTelegram()));
+                if (ticketOperationGet.isPresent()) {
+                    article = ticketOperationGet.get().getTickets().get(0).getArticles().stream().filter(e -> Objects.equals(e.getArticleID(), newArticle.getArticleId())).findFirst().get();
+                }
             }
         }
 
@@ -77,7 +79,8 @@ public class NotificationNewArticle implements Runnable {
                         .parseMode(ParseMode.HTML)
                         .protectContent(true)
                         .build());
-            } else {
+//                if (article != null) sendFile(newArticle, article);
+            } else if (newArticle.getLoginCountRegistration() == 0){
                 bot.execute(SendMessage.builder()
                         .chatId(newArticle.getIdTelegram())
                         .text("<pre>✉️ Новое сообщение \nЗаявка № " + newArticle.getTicketNumber() + "\n</pre>" +
@@ -87,20 +90,24 @@ public class NotificationNewArticle implements Runnable {
                         .protectContent(true)
                         .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
                         .build());
+
             }
-
-            if (article == null || (article.getAttachments() == null || article.getAttachments().isEmpty())) return;
-            article.getAttachments().forEach(e -> {
-                try {
-                    prepareFileToSend(newArticle.getIdTelegram(), e);
-                } catch (TelegramApiException ex) {
-                    ex.printStackTrace();
-                }
-            });
-
         } catch (TelegramApiException e) {
             e.printStackTrace();
+        } finally {
+            if (article != null) sendFile(newArticle, article);
         }
+    }
+
+    private void sendFile(TelegramReceiveNotificationNewArticle newArticle, Article article) {
+        if (article == null || (article.getAttachments() == null || article.getAttachments().isEmpty())) return;
+        article.getAttachments().forEach(e -> {
+            try {
+                prepareFileToSend(newArticle.getIdTelegram(), e);
+            } catch (TelegramApiException ex) {
+                ex.printStackTrace();
+            }
+        });
     }
 
 

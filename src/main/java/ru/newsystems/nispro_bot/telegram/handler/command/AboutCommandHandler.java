@@ -23,17 +23,21 @@ public class AboutCommandHandler implements CommandHandler {
         bot.execute(SendMessage.builder()
                 .chatId(message.getChatId().toString())
                 .parseMode(ParseMode.HTML)
-                .disableWebPagePreview(true)
+//                .disableWebPagePreview(true)
                 .text("""
-                        <i>Этот бот демонстрирует большинство возможностей
-                        взаимодействия с информационной системой</i>\040
-                        <pre>НИС-про|1.0</pre>
-                                               
                         <pre>Контактная информация:</pre>
-                        Адрес: г. Москва, ул ... дом ...
-                        Телефон: +7(499)123-45-67
-                        Почта: info@nic-pro.ru
-                        Группа в VK: https://wwww.vk.com
+                        Адрес: 109316, г.Москва, Волгоградский проспект, д.46Б, корп.1
+                        Телефон: +7 (495) 775–81–30
+                        Сайт: https://nis-pro.ru
+                        Почта: sales@nis-team.ru
+                        Группа в VK: https://vk.com/nis_team
+                        """)
+                .build());
+        bot.execute(SendMessage.builder()
+                .chatId(message.getChatId().toString())
+                .parseMode(ParseMode.HTML)
+                .text("""
+                        <i>Этот бот создан для взаимодействия с информационной системой НИС-Про – программа для бухгалтерского бизнеса</i>\040
                         """)
                 .build());
     }
