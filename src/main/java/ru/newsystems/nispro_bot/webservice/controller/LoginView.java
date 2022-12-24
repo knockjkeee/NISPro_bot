@@ -23,7 +23,6 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
         login.setAction("login");
         add(new H1("Telegram registration"), login);
-
         LoginI18n i18n = LoginI18n.createDefault();
         LoginI18n.Form i18nForm = i18n.getForm();
         i18nForm.setTitle(null);

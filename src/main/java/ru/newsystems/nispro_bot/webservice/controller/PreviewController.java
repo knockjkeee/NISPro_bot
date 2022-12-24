@@ -46,4 +46,13 @@ public class PreviewController {
         return new ResponseEntity<>(handle, HttpStatus.OK);
     }
 
+    @SneakyThrows
+    @PostMapping("/changeResponsible")
+    public ResponseEntity<HandleServices> changeResponsible(@Valid @RequestBody String json) {
+        HandleServices handle = objectMapper.readValue(json, HandleServices.class);
+        if (handle == null) return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        service.saveEntity(handle.getTicket(), handle.getTicket().getArticles().get(0));
+        return new ResponseEntity<>(handle, HttpStatus.OK);
+    }
+
 }

@@ -53,7 +53,7 @@ public class Notification {
 
     public static void sendErrorMsg(VirtaBot bot, Update update, String text, Error error) throws TelegramApiException {
         String resultText =
-                "❗️❗❗ \n<pre>ErrorCode</pre>: " + error.getErrorCode() + "" + "\n<pre>ErrorMessage</pre>: " +
+                "❗️❗❗ \n<pre>ErrorCode:</pre>" + error.getErrorCode() + "" + "\n<pre>ErrorMessage%</pre>" +
                         error.getErrorMessage() + "" + "\nby text: " + text;
         if (update.hasCallbackQuery()) {
             bot.execute(SendMessage.builder()

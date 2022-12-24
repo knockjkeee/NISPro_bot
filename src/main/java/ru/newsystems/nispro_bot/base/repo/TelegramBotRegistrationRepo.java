@@ -18,4 +18,6 @@ public interface TelegramBotRegistrationRepo extends JpaRepository<TelegramBotRe
 
     List<TelegramBotRegistration> findByCompanyContainingIgnoreCase(String company);
 
+    List<TelegramBotRegistration> findByLoginAndQueueName(String login, String queueName);
+
 }
