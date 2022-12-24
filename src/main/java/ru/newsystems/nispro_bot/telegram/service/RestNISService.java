@@ -234,12 +234,18 @@ public class RestNISService {
             dynamic_field.put("Value", registration.getIdTelegram());
             ticket.put("Queue", registration.getQueueName());
             ticket.put("CustomerUser", registration.getCustomerUser());
+            if (!registration.getLogin().equals(registration.getCustomerUser())){
+                ticket.put("Owner", registration.getLogin());
+                ticket.put("Responsible", registration.getLogin());
+            }
+
         } else {
             map.put(regGroup.isCustomerLogin() ? "CustomerUserLogin" : "UserLogin", regGroup.getLogin());
             map.put("Password", regGroup.getPassword());
             dynamic_field.put("Value", regGroup.getIdTelegram());
             ticket.put("Queue", regGroup.getQueueName());
             ticket.put("CustomerUser", regGroup.getCustomerUser());
+
         }
 
         map.put("Ticket", ticket);

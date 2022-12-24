@@ -45,4 +45,7 @@ public class TelegramReceiveNotificationNewArticle {
 
     @Column(name = "body", length = 99999999)
     private String body;
+
+    @Column(name = "responsible")
+    private boolean responsible;
 }
