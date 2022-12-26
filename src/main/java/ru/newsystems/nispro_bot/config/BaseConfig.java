@@ -11,6 +11,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
+//@PropertySource(value = "classpath:/application.properties", encoding="UTF-8")
 public class BaseConfig {
     @Bean
     public RestTemplate getRestTemplate() {

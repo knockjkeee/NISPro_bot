@@ -129,8 +129,11 @@ public class Button {
         }
     }
 
-    private static String checkLoginForStatus(String login, String responsible){
+    private static String checkLoginForStatus(String login, String responsible, String status){
         if (login.equals(responsible)){
+            if (status.equals("закрыта успешно") || status.equals("closed successful")){
+                return "✅";
+            }
             return"\uD83D\uDD14";
         }
         return "";
@@ -139,7 +142,7 @@ public class Button {
     private static void prepareRowButtonFromTickets(List<TicketJ> tickets, List<List<InlineKeyboardButton>> buttons, String login) {
         if (tickets.size() <= 3) {
             tickets.forEach(ticket -> buttons.add(List.of(InlineKeyboardButton.builder()
-                    .text(ticket.getTicketNumber() + checkLoginForStatus(login, ticket.getResponsible()))
+                    .text(ticket.getTicketNumber() + checkLoginForStatus(login, ticket.getResponsible(), ticket.getState()))
                     .callbackData(StringUtil.serialize(new TicketViewDTO(ticket.getTicketNumber(), 0)))
                     .build())));
         } else if (tickets.size() == 4) {
@@ -195,7 +198,7 @@ public class Button {
     private static List<InlineKeyboardButton> getListInlineKeyboardFromTickets(List<TicketJ> tickets, int start, int end, String login) {
         return IntStream.range(start, end)
                 .mapToObj(index -> InlineKeyboardButton.builder()
-                        .text(tickets.get(index).getTicketNumber() + checkLoginForStatus(login, tickets.get(index).getResponsible()))
+                        .text(tickets.get(index).getTicketNumber() + checkLoginForStatus(login, tickets.get(index).getResponsible(),  tickets.get(index).getState()))
                         .callbackData(StringUtil.serialize(new TicketViewDTO(tickets.get(index).getTicketNumber(), 0)))
                         .build())
                 .collect(Collectors.toList());
