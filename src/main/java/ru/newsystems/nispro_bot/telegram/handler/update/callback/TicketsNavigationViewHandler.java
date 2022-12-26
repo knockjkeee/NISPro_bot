@@ -6,13 +6,14 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
+import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
 import ru.newsystems.nispro_bot.base.model.domain.TicketJ;
 import ru.newsystems.nispro_bot.base.model.dto.callback.TicketsNavigationViewDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketGetDTO;
 import ru.newsystems.nispro_bot.base.model.state.DirectionState;
 import ru.newsystems.nispro_bot.base.model.state.SerializableInlineType;
-import ru.newsystems.nispro_bot.telegram.utils.Button;
 import ru.newsystems.nispro_bot.config.cache.CacheStore;
+import ru.newsystems.nispro_bot.telegram.utils.Button;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,7 +45,7 @@ public class TicketsNavigationViewHandler extends CallbackUpdateHandler<TicketsN
     }
 
     @Override
-    protected void handleCallback(Update update, TicketsNavigationViewDTO dto) throws TelegramApiException {
+    protected void handleCallback(Update update, TicketsNavigationViewDTO dto, TelegramBotRegistration registration) throws TelegramApiException {
 
         TicketGetDTO ticket = cache.get(update.getCallbackQuery().getMessage().getChatId());
         if (ticket != null) {
@@ -57,7 +58,7 @@ public class TicketsNavigationViewHandler extends CallbackUpdateHandler<TicketsN
                         .collect(Collectors.toList());
 
                 List<List<InlineKeyboardButton>> inlineKeyboard = prepareButtonsFromTickets(tickets, dto.getPage()
-                        + 1, ticket.getTickets().size());
+                        + 1, ticket.getTickets().size(), registration.getLogin());
 
                 editedInlineKeyboard(update, InlineKeyboardMarkup.builder().keyboard(inlineKeyboard), bot);
             }
@@ -69,7 +70,7 @@ public class TicketsNavigationViewHandler extends CallbackUpdateHandler<TicketsN
                         .collect(Collectors.toList());
 
                 List<List<InlineKeyboardButton>> inlineKeyboard = prepareButtonsFromTickets(tickets, dto.getPage()
-                        - 1, ticket.getTickets().size());
+                        - 1, ticket.getTickets().size(), registration.getLogin());
 
                 editedInlineKeyboard(update, InlineKeyboardMarkup.builder().keyboard(inlineKeyboard), bot);
             }

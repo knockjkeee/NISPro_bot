@@ -9,28 +9,20 @@ import ru.newsystems.nispro_bot.base.model.state.SerializableInlineType;
 @Setter
 public class ChangeStatusDTO extends SerializableInlineObject{
 
-//    @JsonProperty("m")
-//    private Long chatId;
-
     @JsonProperty("t")
     private String ticketId;
 
-//    @JsonProperty("f")
-//    private String from;
+    @JsonProperty("d")
+    private String dynamicField;
 
     public ChangeStatusDTO() {
         super(SerializableInlineType.CHANGE_STATUS);
     }
 
-    public ChangeStatusDTO(String ticketId) {
+    public ChangeStatusDTO( String ticketId, String dynamicField) {
         this();
         this.ticketId = ticketId;
+        this.dynamicField = dynamicField;
     }
 
-//    public ChangeStatusDTO(Long chatId, String ticketId, String from) {
-//        this();
-//        this.chatId = chatId;
-//        this.ticketId = ticketId;
-//        this.from = from;
-//    }
 }

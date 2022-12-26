@@ -7,6 +7,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ForceReplyKeyboard;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
+import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
 import ru.newsystems.nispro_bot.base.model.dto.callback.SendDataDTO;
 import ru.newsystems.nispro_bot.base.model.state.MessageState;
 import ru.newsystems.nispro_bot.base.model.state.SerializableInlineType;
@@ -31,7 +32,7 @@ public class SendMessageHandler extends CallbackUpdateHandler<SendDataDTO> {
   }
 
   @Override
-  protected void handleCallback(Update update, SendDataDTO dto) throws TelegramApiException {
+  protected void handleCallback(Update update, SendDataDTO dto, TelegramBotRegistration registration) throws TelegramApiException {
     String text = "<pre>" + MessageState.SENDCOMMENT.getName() + " по заявке №" + dto.getTicketId() + "</pre>";
     bot.execute(
             SendMessage.builder()

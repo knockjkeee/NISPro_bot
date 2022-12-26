@@ -94,7 +94,7 @@ public class Notification {
     }
 
     public static void missingRegistration(Message message, VirtaBot bot) throws TelegramApiException {
-        String text = "<pre>⛔️ Регистрация отсутствует, запрос на регистрацию направить на почту info@nis-team.ru.</pre>";
+        String text = "<pre>⛔️ Регистрация отсутствует, запрос на регистрацию направить на почту info@*****.ru.</pre>";
         bot.execute(SendMessage.builder()
                 .text(text)
                 .chatId(message.getChatId().toString())

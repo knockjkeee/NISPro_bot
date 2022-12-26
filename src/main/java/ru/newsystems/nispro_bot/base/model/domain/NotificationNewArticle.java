@@ -84,15 +84,15 @@ public class NotificationNewArticle implements Runnable {
                 .callbackData(StringUtil.serialize(new SendDataDTO(newArticle.getTicketNumber())))
                 .build()));
 
-
-        List<List<InlineKeyboardButton>> changeStatus = new ArrayList<>();
-        changeStatus.add(List.of(InlineKeyboardButton.builder()
-                .text(ReplyKeyboardButton.COMMENT.getLabel() + " Принять в работу")
-                .callbackData(StringUtil.serialize(new ChangeStatusDTO(newArticle.getTicketNumber())))
-                .build()));
-
         try {
             if (newArticle.isResponsible() && mainTicket != null) {
+
+                List<List<InlineKeyboardButton>> changeStatus = new ArrayList<>();
+                changeStatus.add(List.of(InlineKeyboardButton.builder()
+                        .text(ReplyKeyboardButton.COMMENT.getLabel() + " Принять в работу")
+                        .callbackData(StringUtil.serialize(new ChangeStatusDTO(newArticle.getTicketNumber(), "")))
+                        .build()));
+
                 log.debug("Смена ответственного по заявке № {}", newArticle.getTicketNumber());
                 bot.execute(SendMessage.builder()
                         .chatId(newArticle.getIdTelegram())

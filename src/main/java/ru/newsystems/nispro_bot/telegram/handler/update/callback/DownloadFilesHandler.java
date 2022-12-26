@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
+import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
 import ru.newsystems.nispro_bot.base.model.domain.Attachment;
 import ru.newsystems.nispro_bot.base.model.domain.TicketJ;
 import ru.newsystems.nispro_bot.base.model.dto.MessageGetDTO;
@@ -49,7 +50,7 @@ public class DownloadFilesHandler extends CallbackUpdateHandler<DownloadFilesDTO
     }
 
     @Override
-    protected void handleCallback(Update update, DownloadFilesDTO dto) throws TelegramApiException {
+    protected void handleCallback(Update update, DownloadFilesDTO dto, TelegramBotRegistration registration) throws TelegramApiException {
         Long id = update.getCallbackQuery().getMessage().getChatId();
         bot.execute(SendChatAction
                 .builder()

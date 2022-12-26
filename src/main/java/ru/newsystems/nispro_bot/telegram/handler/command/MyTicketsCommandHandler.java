@@ -62,7 +62,7 @@ public class MyTicketsCommandHandler implements CommandHandler {
                 TicketGetDTO value = ticketOperationGet.get();
                 cache.update(message.getChatId(), value);
                 List<List<InlineKeyboardButton>> inlineKeyboard =
-                        prepareButtonsFromTickets(value.getTickets(), 1, value.getTickets().size());
+                        prepareButtonsFromTickets(value.getTickets(), 1, value.getTickets().size(), registration.getLogin());
 
                 bot.execute(SendMessage.builder()
                         .chatId(String.valueOf(message.getChatId()))

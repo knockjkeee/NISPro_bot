@@ -8,6 +8,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
+import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
 import ru.newsystems.nispro_bot.base.model.domain.Article;
 import ru.newsystems.nispro_bot.base.model.domain.TicketJ;
 import ru.newsystems.nispro_bot.base.model.dto.callback.TicketViewDTO;
@@ -46,7 +47,7 @@ public class TicketViewHandler extends CallbackUpdateHandler<TicketViewDTO> {
     }
 
     @Override
-    protected void handleCallback(Update update, TicketViewDTO dto) throws TelegramApiException {
+    protected void handleCallback(Update update, TicketViewDTO dto, TelegramBotRegistration registration) throws TelegramApiException {
 
         TicketGetDTO ticket = cache.get(update.getCallbackQuery().getMessage().getChatId());
         if (ticket != null) {
