@@ -1,7 +1,7 @@
 package ru.newsystems.nispro_bot.base.model.domain;
 
 import lombok.Builder;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -26,7 +26,7 @@ import java.util.*;
 
 //@Data
 @Builder
-@Log4j2
+@Slf4j
 public class NotificationNewArticle implements Runnable {
     TelegramNotificationRepo repo;
     private VirtaBot bot;
@@ -90,7 +90,7 @@ public class NotificationNewArticle implements Runnable {
                 List<List<InlineKeyboardButton>> changeStatus = new ArrayList<>();
                 changeStatus.add(List.of(InlineKeyboardButton.builder()
                         .text(ReplyKeyboardButton.COMMENT.getLabel() + " Принять в работу")
-                        .callbackData(StringUtil.serialize(new ChangeStatusDTO(newArticle.getTicketNumber(), "")))
+                        .callbackData(StringUtil.serialize(new ChangeStatusDTO(newArticle.getTicketNumber(), "i", null)))
                         .build()));
 
                 log.debug("Смена ответственного по заявке № {}", newArticle.getTicketNumber());

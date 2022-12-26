@@ -12,7 +12,10 @@ public enum ReplyKeyboardButton {
     TO("Вперед ▶️"),
     DOWNLOAD("\uD83D\uDD87"),
     COMMENT("\uD83D\uDCDD"),
-    NONE("???");
+    NONE("???"),
+    SEND_BACK("⭕️"),
+    SEND_CLOSE("\uD83D\uDFE2")
+    ;
 
     private String label;
 

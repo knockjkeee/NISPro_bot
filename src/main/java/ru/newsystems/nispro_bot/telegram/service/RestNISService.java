@@ -112,8 +112,8 @@ public class RestNISService {
         }
     }
 
-    public Optional<TicketUpdateCreateDTO> getTicketOperationUpdate(Update update, ChangeStatusDTO data, String state, boolean isDynamic) {
-        Long msgId = update.getMessage().getChatId();
+    public Optional<TicketUpdateCreateDTO> getTicketOperationUpdate(Update update, ChangeStatusDTO data, String state, String dynamicField, String owner) {
+        Long msgId = update.getCallbackQuery().getMessage().getChatId();
         TelegramBotRegistration registration = registration(msgId);
         if (registration.getCompany() == null) {
             TicketUpdateCreateDTO temp = new TicketUpdateCreateDTO();
@@ -124,7 +124,7 @@ public class RestNISService {
         }
         String urlUpdate = getUrl("TicketUpdate?" + (registration.isCustomerLogin() ? "CustomerUserLogin=" : "UserLogin="), registration);
 
-        HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerUpdate(isDynamic, data, state);
+        HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerUpdate(dynamicField, data, state, data.getDirection(), owner);
         ResponseEntity<TicketUpdateCreateDTO> response =
                 restTemplate.exchange(urlUpdate, HttpMethod.POST, requestEntity, TicketUpdateCreateDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
@@ -133,8 +133,6 @@ public class RestNISService {
             return Optional.empty();
         }
     }
-
-
 
 
     public Optional<TicketUpdateCreateDTO> getTicketOperationCreate(Update update, RequestDataDTO data, TelegramBotRegistration regGroup) {
@@ -193,23 +191,30 @@ public class RestNISService {
         return new HttpEntity<>(map, getHttpHeaders(MediaType.APPLICATION_JSON));
     }
 
-    private HttpEntity<Map<String, Object>> getRequestHeaderTickerUpdate(boolean isDynamicField, ChangeStatusDTO data, String state) {
+    private HttpEntity<Map<String, Object>> getRequestHeaderTickerUpdate(String dynamicField, ChangeStatusDTO data, String state, String direction, String owner) {
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> ticket = new HashMap<>();
 
         map.put("TicketNumber",data.getTicketId());
         ticket.put("State", state);
-        map.put("Ticket", ticket);
 
-        if (!isDynamicField){
-            List<Object> dynamic = new ArrayList<>();
-            Map<String, Object> dynamic_field = new HashMap<>();
+        List<Object> dynamic = new ArrayList<>();
+        Map<String, Object> dynamic_field = new HashMap<>();
 
+        if (dynamicField == null) {
             dynamic_field.put("Name", "Telegram");
-            dynamic_field.put("Value", data.getDynamicField());
+            dynamic_field.put("Value", data.getTelegramId());
             dynamic.add(dynamic_field);
             map.put("DynamicField", dynamic);
         }
+
+        switch (direction){
+            case "b":
+            case "c":
+                ticket.put("Responsible", owner);
+                break;
+        }
+        map.put("Ticket", ticket);
 
         return new HttpEntity<>(map, getHttpHeaders(MediaType.APPLICATION_JSON));
     }

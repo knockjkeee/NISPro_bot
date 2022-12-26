@@ -69,7 +69,7 @@ public class TicketViewHandler extends CallbackUpdateHandler<TicketViewDTO> {
 //                Article article = ticketView.getArticles().get(0);
 
                 List<Article> articles = ticketView.getArticles();
-                List<List<InlineKeyboardButton>> inlineKeyboard = prepareButtonsFromAllArticles(update.getCallbackQuery().getMessage().getChatId(), articles, page, ticketView);
+                List<List<InlineKeyboardButton>> inlineKeyboard = prepareButtonsFromAllArticles(update.getCallbackQuery().getMessage().getChatId(), articles, page, ticketView, registration.getLogin());
                 String resultText = prepareTextForTickerAndAllArticle(page, ticketView, articles);
 
                 bot.execute(EditMessageText

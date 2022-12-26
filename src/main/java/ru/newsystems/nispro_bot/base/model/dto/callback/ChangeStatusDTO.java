@@ -13,16 +13,19 @@ public class ChangeStatusDTO extends SerializableInlineObject{
     private String ticketId;
 
     @JsonProperty("d")
-    private String dynamicField;
+    private String direction;
+
+    @JsonProperty("i")
+    private String telegramId;
 
     public ChangeStatusDTO() {
         super(SerializableInlineType.CHANGE_STATUS);
     }
 
-    public ChangeStatusDTO( String ticketId, String dynamicField) {
+    public ChangeStatusDTO(String ticketId, String direction, String telegramId) {
         this();
         this.ticketId = ticketId;
-        this.dynamicField = dynamicField;
+        this.direction = direction;
+        this.telegramId = telegramId;
     }
-
 }
