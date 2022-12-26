@@ -8,6 +8,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
+import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
 import ru.newsystems.nispro_bot.base.model.dto.callback.TicketsHomeViewDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketGetDTO;
 import ru.newsystems.nispro_bot.base.model.state.SerializableInlineType;
@@ -42,7 +43,7 @@ public class TicketsHomeViewHandler extends CallbackUpdateHandler<TicketsHomeVie
     }
 
     @Override
-    protected void handleCallback(Update update, TicketsHomeViewDTO dto) throws TelegramApiException {
+    protected void handleCallback(Update update, TicketsHomeViewDTO dto, TelegramBotRegistration registration) throws TelegramApiException {
 
         TicketGetDTO ticket = cache.get(update.getCallbackQuery().getMessage().getChatId());
         if (ticket != null) {
@@ -52,9 +53,7 @@ public class TicketsHomeViewHandler extends CallbackUpdateHandler<TicketsHomeVie
 //                    .action(ActionType.TYPING.toString())
 //                    .build());
 
-            List<List<InlineKeyboardButton>> inlineKeyboard = prepareButtonsFromTickets(ticket.getTickets(), 1, ticket
-                    .getTickets()
-                    .size());
+            List<List<InlineKeyboardButton>> inlineKeyboard = prepareButtonsFromTickets(ticket.getTickets(), 1, ticket.getTickets().size(), registration.getLogin());
 
             bot.execute(EditMessageText
                     .builder()

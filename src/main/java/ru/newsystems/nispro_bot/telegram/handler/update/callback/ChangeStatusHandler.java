@@ -4,6 +4,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
 import ru.newsystems.nispro_bot.base.model.dto.callback.ChangeStatusDTO;
 import ru.newsystems.nispro_bot.base.model.state.SerializableInlineType;
 
@@ -22,7 +23,7 @@ public class ChangeStatusHandler extends CallbackUpdateHandler<ChangeStatusDTO>{
     }
 
     @Override
-    protected void handleCallback(Update update, ChangeStatusDTO dto) throws TelegramApiException {
+    protected void handleCallback(Update update, ChangeStatusDTO dto, TelegramBotRegistration registration) throws TelegramApiException {
         log.debug("asd");
     }
 }

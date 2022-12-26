@@ -25,9 +25,9 @@ public class Button {
         return Math.ceil((double) size / COUNT_ITEM_IN_PAGE);
     }
 
-    public static List<List<InlineKeyboardButton>> prepareButtonsFromTickets(List<TicketJ> tickets, int page, int fullSize) {
+    public static List<List<InlineKeyboardButton>> prepareButtonsFromTickets(List<TicketJ> tickets, int page, int fullSize, String login) {
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
-        prepareRowButtonFromTickets(tickets, buttons);
+        prepareRowButtonFromTickets(tickets, buttons, login);
         prepareNavigationButtonFromTickets(page, buttons, fullSize);
         return buttons;
     }
@@ -129,28 +129,35 @@ public class Button {
         }
     }
 
-    private static void prepareRowButtonFromTickets(List<TicketJ> tickets, List<List<InlineKeyboardButton>> buttons) {
+    private static String checkLoginForStatus(String login, String responsible){
+        if (login.equals(responsible)){
+            return"\uD83D\uDD14";
+        }
+        return "";
+    }
+
+    private static void prepareRowButtonFromTickets(List<TicketJ> tickets, List<List<InlineKeyboardButton>> buttons, String login) {
         if (tickets.size() <= 3) {
             tickets.forEach(ticket -> buttons.add(List.of(InlineKeyboardButton.builder()
-                    .text(ticket.getTicketNumber())
+                    .text(ticket.getTicketNumber() + checkLoginForStatus(login, ticket.getResponsible()))
                     .callbackData(StringUtil.serialize(new TicketViewDTO(ticket.getTicketNumber(), 0)))
                     .build())));
         } else if (tickets.size() == 4) {
-            List<InlineKeyboardButton> firstRow = getListInlineKeyboardFromTickets(tickets, 0, 2);
-            List<InlineKeyboardButton> secondRow = getListInlineKeyboardFromTickets(tickets, 2, 4);
+            List<InlineKeyboardButton> firstRow = getListInlineKeyboardFromTickets(tickets, 0, 2, login);
+            List<InlineKeyboardButton> secondRow = getListInlineKeyboardFromTickets(tickets, 2, 4, login);
             buttons.add(firstRow);
             buttons.add(secondRow);
         } else if (tickets.size() == 5) {
-            List<InlineKeyboardButton> firstRow = getListInlineKeyboardFromTickets(tickets, 0, 2);
-            List<InlineKeyboardButton> secondRow = getListInlineKeyboardFromTickets(tickets, 2, 4);
-            List<InlineKeyboardButton> thirdRow = getListInlineKeyboardFromTickets(tickets, 4, 5);
+            List<InlineKeyboardButton> firstRow = getListInlineKeyboardFromTickets(tickets, 0, 2, login);
+            List<InlineKeyboardButton> secondRow = getListInlineKeyboardFromTickets(tickets, 2, 4, login);
+            List<InlineKeyboardButton> thirdRow = getListInlineKeyboardFromTickets(tickets, 4, 5, login);
             buttons.add(firstRow);
             buttons.add(secondRow);
             buttons.add(thirdRow);
         } else {
-            List<InlineKeyboardButton> firstRow = getListInlineKeyboardFromTickets(tickets, 0, 2);
-            List<InlineKeyboardButton> secondRow = getListInlineKeyboardFromTickets(tickets, 2, 4);
-            List<InlineKeyboardButton> thirdRow = getListInlineKeyboardFromTickets(tickets, 4, 6);
+            List<InlineKeyboardButton> firstRow = getListInlineKeyboardFromTickets(tickets, 0, 2, login);
+            List<InlineKeyboardButton> secondRow = getListInlineKeyboardFromTickets(tickets, 2, 4, login);
+            List<InlineKeyboardButton> thirdRow = getListInlineKeyboardFromTickets(tickets, 4, 6, login);
             buttons.add(firstRow);
             buttons.add(secondRow);
             buttons.add(thirdRow);
@@ -185,10 +192,10 @@ public class Button {
         }
     }
 
-    private static List<InlineKeyboardButton> getListInlineKeyboardFromTickets(List<TicketJ> tickets, int start, int end) {
+    private static List<InlineKeyboardButton> getListInlineKeyboardFromTickets(List<TicketJ> tickets, int start, int end, String login) {
         return IntStream.range(start, end)
                 .mapToObj(index -> InlineKeyboardButton.builder()
-                        .text(String.valueOf(tickets.get(index).getTicketNumber()))
+                        .text(tickets.get(index).getTicketNumber() + checkLoginForStatus(login, tickets.get(index).getResponsible()))
                         .callbackData(StringUtil.serialize(new TicketViewDTO(tickets.get(index).getTicketNumber(), 0)))
                         .build())
                 .collect(Collectors.toList());

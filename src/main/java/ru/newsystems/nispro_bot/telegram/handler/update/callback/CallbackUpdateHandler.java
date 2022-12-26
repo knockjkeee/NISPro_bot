@@ -21,7 +21,7 @@ public abstract class CallbackUpdateHandler<T extends SerializableInlineObject>
 
   protected abstract SerializableInlineType getSerializableType();
 
-  protected abstract void handleCallback(Update update, T dto) throws TelegramApiException;
+  protected abstract void handleCallback(Update update, T dto, TelegramBotRegistration registration) throws TelegramApiException;
 
   @Override
   public boolean handleUpdate(Update update, TelegramBotRegistration registration) throws TelegramApiException {
@@ -35,7 +35,7 @@ public abstract class CallbackUpdateHandler<T extends SerializableInlineObject>
       return false;
     }
     log.info("Found callback {}", getSerializableType());
-    handleCallback(update, dto.get());
+    handleCallback(update, dto.get(), registration);
     return true;
   }
 
