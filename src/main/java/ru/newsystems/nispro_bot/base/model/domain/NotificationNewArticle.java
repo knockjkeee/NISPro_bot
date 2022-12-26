@@ -1,7 +1,7 @@
 package ru.newsystems.nispro_bot.base.model.domain;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.extern.log4j.Log4j2;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -11,6 +11,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
 import ru.newsystems.nispro_bot.base.model.db.TelegramReceiveNotificationNewArticle;
+import ru.newsystems.nispro_bot.base.model.dto.callback.ChangeStatusDTO;
 import ru.newsystems.nispro_bot.base.model.dto.callback.SendDataDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketGetDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketSearchDTO;
@@ -23,8 +24,9 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-@Data
+//@Data
 @Builder
+@Log4j2
 public class NotificationNewArticle implements Runnable {
     TelegramNotificationRepo repo;
     private VirtaBot bot;
@@ -33,20 +35,23 @@ public class NotificationNewArticle implements Runnable {
     @Override
     public void run() {
         List<TelegramReceiveNotificationNewArticle> newArticles = repo.findAll();
+        log.debug("Найдены новые {} записи в таблице оповещения NotificationNewArticle", newArticles.size());
         if (newArticles.size() > 0) {
             newArticles.stream().filter(i -> i.getIsVisibleForCustomer() == 1).forEach(newArticle -> {
                 try {
                     Long id = Long.parseLong(newArticle.getIdTelegram());
                     sendNotification(newArticle);
                 } catch (NumberFormatException ignored) {
+                    log.debug("Ошибка в парсере id у {}", newArticle.getIdTelegram());
                 }
             });
         }
         repo.deleteAll();
+        log.debug("Очистка таблицы - NotificationNewArticle");
     }
 
     private void sendNotification(TelegramReceiveNotificationNewArticle newArticle) {
-
+        TicketJ mainTicket =  null;
         Optional<TicketSearchDTO> currentTicket =
                 rest.getTicketOperationSearch(List.of(Long.valueOf(newArticle.getTicketNumber())), Long.valueOf(newArticle.getIdTelegram()));
         Article article = null;
@@ -56,6 +61,7 @@ public class NotificationNewArticle implements Runnable {
                 Optional<TicketGetDTO> ticketOperationGet =
                         rest.getTicketOperationGet(ticketIDs, Long.valueOf(newArticle.getIdTelegram()));
                 if (ticketOperationGet.isPresent()) {
+                    mainTicket = ticketOperationGet.get().getTickets().get(0);
                     article = ticketOperationGet.get()
                             .getTickets()
                             .get(0)
@@ -64,53 +70,72 @@ public class NotificationNewArticle implements Runnable {
                             .filter(e -> Objects.equals(e.getArticleID(), newArticle.getArticleId()))
                             .findFirst()
                             .get();
+                }else {
+                    log.debug("Ошибка в поиске запроса по номеру {}", newArticle.getTicketNumber());
                 }
+            }else {
+                log.debug("Количество возвращенных id по запросу от {} равно {}", newArticle.getTicketNumber(),currentTicket.get().getTicketIDs().size());
             }
         }
 
-        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
-        buttons.add(List.of(InlineKeyboardButton.builder()
+        List<List<InlineKeyboardButton>> buttonsReceiveNote = new ArrayList<>();
+        buttonsReceiveNote.add(List.of(InlineKeyboardButton.builder()
                 .text(ReplyKeyboardButton.COMMENT.getLabel() + " Отправить комментарий")
                 .callbackData(StringUtil.serialize(new SendDataDTO(newArticle.getTicketNumber())))
                 .build()));
 
+
+        List<List<InlineKeyboardButton>> changeStatus = new ArrayList<>();
+        changeStatus.add(List.of(InlineKeyboardButton.builder()
+                .text(ReplyKeyboardButton.COMMENT.getLabel() + " Принять в работу")
+                .callbackData(StringUtil.serialize(new ChangeStatusDTO(newArticle.getTicketNumber())))
+                .build()));
+
         try {
-            if (newArticle.isResponsible()) {
+            if (newArticle.isResponsible() && mainTicket != null) {
+                log.debug("Смена ответственного по заявке № {}", newArticle.getTicketNumber());
                 bot.execute(SendMessage.builder()
                         .chatId(newArticle.getIdTelegram())
-                        .text("<pre>❗ На Вас назначили новую задачу\nЗаявка № " + newArticle.getTicketNumber() + "\n</pre>" +
-                                "<pre>От: " + newArticle.getCreateBy() + "</pre>" + "\n<b>Тема: </b><i>" +
-                                newArticle.getSubject() + "</i>\n<b>Сообщение: </b><i>" + newArticle.getBody() + "</i>")
+                        .text("<pre>❗ На Вас назначили новую задачу" +
+                                "\nЗаявка № " + mainTicket.getTicketNumber() + "</pre>" +
+                                "\n<pre>От: " +  mainTicket.getOwner() + "</pre>" +
+                                "\n<b>Тема: </b><i>" + mainTicket.getTitle()+ "</i>")
                         .parseMode(ParseMode.HTML)
                         .protectContent(true)
+                        .replyMarkup(InlineKeyboardMarkup.builder().keyboard(changeStatus).build())
                         .build());
             } else if (Long.parseLong(newArticle.getIdTelegram()) < 0) {
+                log.debug("Оповещении группы по заявке № {}", newArticle.getTicketNumber());
                 bot.execute(SendMessage.builder()
                         .chatId(newArticle.getIdTelegram())
-                        .text("<pre>✉️ Новое сообщение \nЗаявка № " + newArticle.getTicketNumber() + "\n</pre>" +
-                                "<pre>От: " + newArticle.getCreateBy() + "</pre>" + "\n<b>Тема: </b><i>" +
-                                newArticle.getSubject() + "</i>\n<b>Сообщение: </b><i>" + newArticle.getBody() + "</i>")
+                        .text(getDefaultNotificationText(newArticle))
                         .parseMode(ParseMode.HTML)
                         .protectContent(true)
                         .build());
 //                if (article != null) sendFile(newArticle, article);
             } else if (newArticle.getLoginCountRegistration() == 0) {
+                log.debug("Оповещении по заявке № {}", newArticle.getTicketNumber());
                 bot.execute(SendMessage.builder()
                         .chatId(newArticle.getIdTelegram())
-                        .text("<pre>✉️ Новое сообщение \nЗаявка № " + newArticle.getTicketNumber() + "\n</pre>" +
-                                "<pre>От: " + newArticle.getCreateBy() + "</pre>" + "\n<b>Тема: </b><i>" +
-                                newArticle.getSubject() + "</i>\n<b>Сообщение: </b><i>" + newArticle.getBody() + "</i>")
+                        .text(getDefaultNotificationText(newArticle))
                         .parseMode(ParseMode.HTML)
                         .protectContent(true)
-                        .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
+                        .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttonsReceiveNote).build())
                         .build());
-
             }
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            log.debug("Ошибка в отправке сообщения пользователю", e);
         } finally {
-            if (article != null) sendFile(newArticle, article);
+            if (article != null && !newArticle.isResponsible()) sendFile(newArticle, article);
         }
+    }
+
+    private String getDefaultNotificationText(TelegramReceiveNotificationNewArticle newArticle) {
+        return "<pre>✉️ Новое сообщение " + "" +
+                "\nЗаявка № " + newArticle.getTicketNumber() + "</pre>" + "" +
+                "\n<pre>От: " + newArticle.getCreateBy() + "</pre>" + "" +
+                "\n<b>Тема: </b><i>" + newArticle.getSubject() + "</i>" +
+                "\n<b>Сообщение: </b><i>" + newArticle.getBody() + "</i>";
     }
 
     private void sendFile(TelegramReceiveNotificationNewArticle newArticle, Article article) {
@@ -123,7 +148,6 @@ public class NotificationNewArticle implements Runnable {
             }
         });
     }
-
 
     private void prepareFileToSend(String id, Attachment e) throws TelegramApiException {
         byte[] decode = Base64.getDecoder().decode(e.getContent().getBytes(StandardCharsets.UTF_8));

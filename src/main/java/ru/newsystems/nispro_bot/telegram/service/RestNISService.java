@@ -31,6 +31,8 @@ public class RestNISService {
     private final TelegramBotRegistrationService service;
     @Value("${nis.pro.path}")
     private String GENERICINTERFACE_PL_WEBSERVICE_TICKET;
+//    private final List<String> LIST_STATE = List.of("новая", "закрыта успешно", "открыта");
+    private final List<String> LIST_STATE = List.of("merged", "open", "new", "новая", "закрыта успешно", "открыта");
 
     public RestNISService(RestTemplate restTemplate, TelegramBotRegistrationService service) {
         this.restTemplate = restTemplate;
@@ -138,7 +140,7 @@ public class RestNISService {
         }
 
         String url = getUrl("TicketSearch?" + (registration.isCustomerLogin() ? "CustomerUserLogin=" : "UserLogin="), registration);
-        HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerSearch();
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = getRequestHeaderTickerSearch();
         ResponseEntity<TicketSearchDTO> response =
                 restTemplate.exchange(url, HttpMethod.POST, requestEntity, TicketSearchDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
@@ -161,7 +163,6 @@ public class RestNISService {
     private HttpEntity<Map<String, Object>> getRequestHeaderTickerUpdate(Update update, RequestDataDTO data, String userName) {
 
         String title = getCurrentTitleFromTicket(update, data);
-
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> arc = new HashMap<>();
 
@@ -282,12 +283,12 @@ public class RestNISService {
         return new HttpEntity<>(map, getHttpHeaders(MediaType.APPLICATION_JSON));
     }
 
-    public HttpEntity<Map<String, Object>> getRequestHeaderTickerSearch() {
-        Map<String, Object> map = new HashMap<>();
+    public HttpEntity<MultiValueMap<String, Object>> getRequestHeaderTickerSearch() {
+        MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
         Map<String, Object> dynamicField = new HashMap<>();
+        if (LIST_STATE != null) LIST_STATE.forEach(e -> map.add("States", e));
         dynamicField.put("Empty", 0);
-        map.put("States", "open");
-        map.put("DynamicField_Telegram", dynamicField);
+        map.add("DynamicField_Telegram", dynamicField);
         return new HttpEntity<>(map, getHttpHeaders(MediaType.APPLICATION_JSON));
     }
 
@@ -310,5 +311,4 @@ public class RestNISService {
     private String getUrlByGroup(TelegramBotRegistration registration) {
         return registration.getUrl() + "TicketCreate";
     }
-
 }

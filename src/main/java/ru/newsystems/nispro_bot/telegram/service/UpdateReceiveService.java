@@ -16,14 +16,14 @@ import java.util.stream.Collectors;
 @Service
 public class UpdateReceiveService implements Subscriber {
 
-    private final VirtaBot bot;
+   // private final VirtaBot bot;
     private final TelegramBotRegistrationService service;
     private List<UpdateHandler> updateHandlers;
 
     public UpdateReceiveService(VirtaBot bot, List<UpdateHandler> updateHandlers, TelegramBotRegistrationService service) {
         this.service = service;
         bot.subscribe(this);
-        this.bot = bot;
+        //this.bot = bot;
         this.updateHandlers = updateHandlers;
     }
 

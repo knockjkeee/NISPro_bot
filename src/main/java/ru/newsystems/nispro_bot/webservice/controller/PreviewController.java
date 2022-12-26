@@ -1,7 +1,7 @@
 package ru.newsystems.nispro_bot.webservice.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,31 +26,49 @@ public class PreviewController {
         this.service = service;
     }
 
-    @SneakyThrows
+   // @SneakyThrows
     @PostMapping("/sendNote")
     public ResponseEntity<HandleServices> sendNote(@Valid @RequestBody String json) {
-        HandleServices handle = objectMapper.readValue(json, HandleServices.class);
-        if (handle == null) return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        HandleServices handle = null;
+        try {
+            handle = objectMapper.readValue(json, HandleServices.class);
+        } catch (JsonProcessingException e) {
+            log.error("При добавлении нового комментария возникли проблемы при парсинге входящего обьекта");
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+        log.debug("Добавление нового комментария к заявке №{}", handle.getTicket().getTicketNumber());
         service.saveEntity(handle.getTicket(), handle.getTicket()
                 .getArticles()
                 .get(handle.getTicket().getArticles().size() - 1), handle.getEvent().getEvent() + ":sendNote");
         return new ResponseEntity<>(handle, HttpStatus.OK);
     }
 
-    @SneakyThrows
+    //@SneakyThrows
     @PostMapping("/newTicket")
     public ResponseEntity<HandleServices> newTicket(@Valid @RequestBody String json) {
-        HandleServices handle = objectMapper.readValue(json, HandleServices.class);
-        if (handle == null) return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        HandleServices handle = null;
+        try {
+            handle = objectMapper.readValue(json, HandleServices.class);
+        } catch (JsonProcessingException e) {
+            log.error("При создании новой заявки возникли проблемы при парсинге входящего обьекта");
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+        log.debug("Создание новой заявки №{}", handle.getTicket().getTicketNumber());
         service.saveEntity(handle.getTicket(), handle.getTicket().getArticles().get(0), handle.getEvent().getEvent() + ":newTicket");
         return new ResponseEntity<>(handle, HttpStatus.OK);
     }
 
-    @SneakyThrows
+//    @SneakyThrows
     @PostMapping("/changeResponsible")
     public ResponseEntity<HandleServices> changeResponsible(@Valid @RequestBody String json) {
-        HandleServices handle = objectMapper.readValue(json, HandleServices.class);
-        if (handle == null) return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        HandleServices handle = null;
+        try {
+            handle = objectMapper.readValue(json, HandleServices.class);
+        } catch (JsonProcessingException e) {
+            log.error("При смене ответственного возникли проблемы при парсинге входящего обьекта");
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+        log.debug("Изменение ответственного по заявке №{}", handle.getTicket().getTicketNumber());
         service.saveEntity(handle.getTicket(), handle.getTicket().getArticles().get(0));
         return new ResponseEntity<>(handle, HttpStatus.OK);
     }

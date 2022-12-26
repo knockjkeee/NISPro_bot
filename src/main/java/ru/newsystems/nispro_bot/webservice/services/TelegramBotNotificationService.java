@@ -55,7 +55,6 @@ public class TelegramBotNotificationService {
     public void saveEntity(Ticket ticket, Article article){
         if (validateDuplicate(article)) return;
         //if (ticket.getOwner().equals(ticket.getResponsible())) return;
-
         List<TelegramBotRegistration> byLogin = registrationRepo.findByLoginAndQueueName(ticket.getResponsible(), ticket.getQueue());
         if (byLogin.size() == 0) return;
 
@@ -68,8 +67,10 @@ public class TelegramBotNotificationService {
     }
 
     private boolean validateDuplicate(Article article) {
-        List<TelegramReceiveNotificationNewArticle> all = repo.findAll();
-        List<TelegramReceiveNotificationNewArticle> collect = all.stream()
+//        List<TelegramReceiveNotificationNewArticle> all = repo.findAll();
+        List<TelegramReceiveNotificationNewArticle> collect = repo
+                .findAll()
+                .stream()
                 .filter(e -> Objects.equals(e.getArticleId(), article.getArticleID()))
                 .collect(Collectors.toList());
         if (collect.size() > 0) return true;
@@ -93,5 +94,4 @@ public class TelegramBotNotificationService {
                 NotificationNewArticle.builder().bot(bot).repo(repo).rest(rest).build();
         executor.scheduleAtFixedRate(notificationNewArticle, 30, 60, TimeUnit.SECONDS);
     }
-
 }
