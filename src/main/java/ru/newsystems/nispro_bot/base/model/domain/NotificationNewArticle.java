@@ -11,6 +11,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
 import ru.newsystems.nispro_bot.base.model.db.TelegramReceiveNotificationNewArticle;
+import ru.newsystems.nispro_bot.base.model.dto.callback.ChangeStatusDTO;
 import ru.newsystems.nispro_bot.base.model.dto.callback.SendDataDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketGetDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketSearchDTO;
@@ -77,10 +78,17 @@ public class NotificationNewArticle implements Runnable {
             }
         }
 
-        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
-        buttons.add(List.of(InlineKeyboardButton.builder()
+        List<List<InlineKeyboardButton>> buttonsReceiveNote = new ArrayList<>();
+        buttonsReceiveNote.add(List.of(InlineKeyboardButton.builder()
                 .text(ReplyKeyboardButton.COMMENT.getLabel() + " Отправить комментарий")
                 .callbackData(StringUtil.serialize(new SendDataDTO(newArticle.getTicketNumber())))
+                .build()));
+
+
+        List<List<InlineKeyboardButton>> changeStatus = new ArrayList<>();
+        changeStatus.add(List.of(InlineKeyboardButton.builder()
+                .text(ReplyKeyboardButton.COMMENT.getLabel() + " Принять в работу")
+                .callbackData(StringUtil.serialize(new ChangeStatusDTO(newArticle.getTicketNumber())))
                 .build()));
 
         try {
@@ -94,6 +102,7 @@ public class NotificationNewArticle implements Runnable {
                                 "\n<b>Тема: </b><i>" + mainTicket.getTitle()+ "</i>")
                         .parseMode(ParseMode.HTML)
                         .protectContent(true)
+                        .replyMarkup(InlineKeyboardMarkup.builder().keyboard(changeStatus).build())
                         .build());
             } else if (Long.parseLong(newArticle.getIdTelegram()) < 0) {
                 log.debug("Оповещении группы по заявке № {}", newArticle.getTicketNumber());
@@ -111,7 +120,7 @@ public class NotificationNewArticle implements Runnable {
                         .text(getDefaultNotificationText(newArticle))
                         .parseMode(ParseMode.HTML)
                         .protectContent(true)
-                        .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
+                        .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttonsReceiveNote).build())
                         .build());
             }
         } catch (TelegramApiException e) {
