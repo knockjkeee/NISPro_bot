@@ -71,7 +71,7 @@ public class SendOperationTask implements Runnable {
                 }
             }
         } catch (TelegramApiException e) {
-            log.error("Error - run by SendOperationTask, stack trace: " + e.getLocalizedMessage());
+            log.error("Error - run by SendOperationTask, stacktrace: " + e.getLocalizedMessage());
         }
     }
 
