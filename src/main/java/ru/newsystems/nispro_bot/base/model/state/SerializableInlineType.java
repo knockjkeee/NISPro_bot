@@ -8,6 +8,7 @@ public enum SerializableInlineType {
     TICKET_HOME(4),
     ARTICLE_NAVIGATION(5),
     ARTICLE_VIEW(6),
+    CHANGE_STATUS(7),
     ;
 
     private final int index;
@@ -19,4 +20,5 @@ public enum SerializableInlineType {
     public int getIndex() {
         return index;
     }
+
 }
