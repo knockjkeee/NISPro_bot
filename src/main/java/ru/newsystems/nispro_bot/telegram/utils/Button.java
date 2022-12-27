@@ -51,14 +51,18 @@ public class Button {
         return buttons;
     }
 
-    public static List<List<InlineKeyboardButton>> prepareButtonsFromAllArticles(Long chatId, List<Article> articles, int page, TicketJ ticket) {
+    public static List<List<InlineKeyboardButton>> prepareButtonsFromAllArticles(Long chatId, List<Article> articles, int page, TicketJ ticket, String login) {
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
 
         buttons.add(List.of(InlineKeyboardButton.builder()
                 .text(ReplyKeyboardButton.COMMENT.getLabel() + " Отправить комментарий")
                 .callbackData(StringUtil.serialize(new SendDataDTO(ticket.getTicketNumber())))
                 .build()));
+        String state = ticket.getState();
 
+        if (!checkLoginForStatus(login, ticket.getResponsible(), ticket.getState()).isEmpty()) {
+            addChangeStateButton(ticket, buttons, state);
+        }
 
         if (articles.stream().anyMatch(e -> e.getAttachments() != null && e.getAttachments().size() > 0)) {
             buttons.add(List.of(InlineKeyboardButton.builder()
@@ -71,6 +75,37 @@ public class Button {
                 .callbackData(StringUtil.serialize(new TicketsHomeViewDTO(0)))
                 .build()));
         return buttons;
+    }
+
+    private static void addChangeStateButton(TicketJ ticket, List<List<InlineKeyboardButton>> buttons, String state) {
+        switch (state){
+            case "open":
+            case "открыта":
+                buttons.add(List.of(
+                        InlineKeyboardButton.builder()
+                                .text(ReplyKeyboardButton.SEND_BACK.getLabel() + " Вернуть")
+                                .callbackData(StringUtil.serialize(new ChangeStatusDTO(ticket.getTicketNumber(), "b", null)))
+                                .build(),
+                        InlineKeyboardButton.builder()
+                                .text(ReplyKeyboardButton.SEND_CLOSE.getLabel() + " Закрыть")
+                                .callbackData(StringUtil.serialize(new ChangeStatusDTO(ticket.getTicketNumber(), "c", null)))
+                                .build()));
+                break;
+            case "new":
+            case "новая":
+                buttons.add(List.of(
+                        InlineKeyboardButton.builder()
+                                .text(ReplyKeyboardButton.COMMENT.getLabel() + " Принять в работу")
+                                .callbackData(StringUtil.serialize(new ChangeStatusDTO(ticket.getTicketNumber(), "a", null)))
+                                .build(),
+                        InlineKeyboardButton.builder()
+                                .text(ReplyKeyboardButton.SEND_CLOSE.getLabel() + " Закрыть")
+                                .callbackData(StringUtil.serialize(new ChangeStatusDTO(ticket.getTicketNumber(), "c", null)))
+                                .build()));
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + state);
+        }
     }
 
 
@@ -131,9 +166,9 @@ public class Button {
 
     private static String checkLoginForStatus(String login, String responsible, String status){
         if (login.equals(responsible)){
-            if (status.equals("закрыта успешно") || status.equals("closed successful")){
-                return "✅";
-            }
+//            if (status.equals("закрыта успешно") || status.equals("closed successful")){
+//                return "✅";
+//            }
             return"\uD83D\uDD14";
         }
         return "";

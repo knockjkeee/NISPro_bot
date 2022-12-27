@@ -1,12 +1,11 @@
 package ru.newsystems.nispro_bot.telegram.handler.update.callback;
 
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.newsystems.nispro_bot.base.integration.VirtaBot;
 import ru.newsystems.nispro_bot.base.model.db.TelegramBotRegistration;
-import ru.newsystems.nispro_bot.base.model.domain.DynamicField;
 import ru.newsystems.nispro_bot.base.model.domain.TicketJ;
 import ru.newsystems.nispro_bot.base.model.dto.callback.ChangeStatusDTO;
 import ru.newsystems.nispro_bot.base.model.dto.domain.TicketGetDTO;
@@ -22,7 +21,7 @@ import static ru.newsystems.nispro_bot.base.utils.NumberUtil.getIdByTicketNumber
 import static ru.newsystems.nispro_bot.telegram.utils.Notification.resultOperationToChat;
 
 @Component
-@Log4j2
+@Slf4j
 public class ChangeStatusHandler extends CallbackUpdateHandler<ChangeStatusDTO>{
 
     private final RestNISService rest;
@@ -32,7 +31,6 @@ public class ChangeStatusHandler extends CallbackUpdateHandler<ChangeStatusDTO>{
         this.rest = rest;
         this.bot = bot;
     }
-
 
     @Override
     protected Class<ChangeStatusDTO> getDtoType() {
@@ -47,7 +45,6 @@ public class ChangeStatusHandler extends CallbackUpdateHandler<ChangeStatusDTO>{
     @Override
     protected void handleCallback(Update update, ChangeStatusDTO dto, TelegramBotRegistration registration) throws TelegramApiException {
         long tk = getIdByTicketNumber(String.valueOf(dto.getTicketId()));
-
         Optional<TicketSearchDTO> ticketSearch = rest.getTicketOperationSearch(List.of(tk), update.getCallbackQuery().getMessage().getChatId());
         List<Long> ticketsId = ticketSearch.get().getTicketIDs();
         Optional<TicketGetDTO> ticketGetDTO = rest.getTicketOperationGet(ticketsId,  update.getCallbackQuery().getMessage().getChatId());
@@ -55,29 +52,24 @@ public class ChangeStatusHandler extends CallbackUpdateHandler<ChangeStatusDTO>{
         String state = ticket.getState();
 
         Optional<TicketUpdateCreateDTO> ticketUpdate;
-        dto.setDynamicField(registration.getIdTelegram());
+        dto.setTelegramId(registration.getIdTelegram());
 
-        DynamicField telegramDynamicField = ticket.getDynamicField()
+        String tgValue = ticket.getDynamicField()
                 .stream()
                 .filter(e -> e.getName().equals("Telegram"))
                 .findFirst()
-                .get();
+                .get()
+                .getValue();
 
-        switch (state) {
-            case "open":
-            case "открыта":
-                ticketUpdate = rest.getTicketOperationUpdate(update, dto, "закрыта успешно", telegramDynamicField.getValue() == null);
-                break;
-            case "new":
-            case "новая":
-                ticketUpdate = rest.getTicketOperationUpdate(update, dto, "открытa", telegramDynamicField.getValue() == null);
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + state);
-        }
-        if (ticketUpdate.isPresent()) {
+        log.info("Состояние - {}", state);
+        log.info("DTO - {} => {}", dto.getTicketId(), dto.getDirection());
+
+        ticketUpdate = rest.getTicketOperationUpdate(update, dto, tgValue, ticket.getOwner());
+
+        if (ticketUpdate.isPresent() && ticketUpdate.get().getError() == null) {
             resultOperationToChat(update, bot, true);
         }else{
+            log.info("Ошибка в операции смены статуса по заявке #{}", dto.getTicketId());
             resultOperationToChat(update, bot, false);
         }
     }

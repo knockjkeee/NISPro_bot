@@ -1,7 +1,7 @@
 package ru.newsystems.nispro_bot.base.model.domain;
 
 import lombok.Builder;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -26,7 +26,7 @@ import java.util.*;
 
 //@Data
 @Builder
-@Log4j2
+@Slf4j
 public class NotificationNewArticle implements Runnable {
     TelegramNotificationRepo repo;
     private VirtaBot bot;
@@ -35,19 +35,19 @@ public class NotificationNewArticle implements Runnable {
     @Override
     public void run() {
         List<TelegramReceiveNotificationNewArticle> newArticles = repo.findAll();
-        log.debug("Найдены новые {} записи в таблице оповещения NotificationNewArticle", newArticles.size());
+        log.info("Найдены новые {} записи в таблице оповещения NotificationNewArticle", newArticles.size());
         if (newArticles.size() > 0) {
             newArticles.stream().filter(i -> i.getIsVisibleForCustomer() == 1).forEach(newArticle -> {
                 try {
                     Long id = Long.parseLong(newArticle.getIdTelegram());
                     sendNotification(newArticle);
                 } catch (NumberFormatException ignored) {
-                    log.debug("Ошибка в парсере id у {}", newArticle.getIdTelegram());
+                    log.info("Ошибка в парсере id у {}", newArticle.getIdTelegram());
                 }
             });
         }
         repo.deleteAll();
-        log.debug("Очистка таблицы - NotificationNewArticle");
+        log.info("Очистка таблицы - NotificationNewArticle");
     }
 
     private void sendNotification(TelegramReceiveNotificationNewArticle newArticle) {
@@ -71,10 +71,10 @@ public class NotificationNewArticle implements Runnable {
                             .findFirst()
                             .get();
                 }else {
-                    log.debug("Ошибка в поиске запроса по номеру {}", newArticle.getTicketNumber());
+                    log.info("Ошибка в поиске запроса по номеру {}", newArticle.getTicketNumber());
                 }
             }else {
-                log.debug("Количество возвращенных id по запросу от {} равно {}", newArticle.getTicketNumber(),currentTicket.get().getTicketIDs().size());
+                log.info("Количество возвращенных id по запросу от {} равно {}", newArticle.getTicketNumber(),currentTicket.get().getTicketIDs().size());
             }
         }
 
@@ -90,10 +90,10 @@ public class NotificationNewArticle implements Runnable {
                 List<List<InlineKeyboardButton>> changeStatus = new ArrayList<>();
                 changeStatus.add(List.of(InlineKeyboardButton.builder()
                         .text(ReplyKeyboardButton.COMMENT.getLabel() + " Принять в работу")
-                        .callbackData(StringUtil.serialize(new ChangeStatusDTO(newArticle.getTicketNumber(), "")))
+                        .callbackData(StringUtil.serialize(new ChangeStatusDTO(newArticle.getTicketNumber(), "a", null)))
                         .build()));
 
-                log.debug("Смена ответственного по заявке № {}", newArticle.getTicketNumber());
+                log.info("Смена ответственного по заявке № {}", newArticle.getTicketNumber());
                 bot.execute(SendMessage.builder()
                         .chatId(newArticle.getIdTelegram())
                         .text("<pre>❗ На Вас назначили новую задачу" +
@@ -105,7 +105,7 @@ public class NotificationNewArticle implements Runnable {
                         .replyMarkup(InlineKeyboardMarkup.builder().keyboard(changeStatus).build())
                         .build());
             } else if (Long.parseLong(newArticle.getIdTelegram()) < 0) {
-                log.debug("Оповещении группы по заявке № {}", newArticle.getTicketNumber());
+                log.info("Оповещении группы по заявке № {}", newArticle.getTicketNumber());
                 bot.execute(SendMessage.builder()
                         .chatId(newArticle.getIdTelegram())
                         .text(getDefaultNotificationText(newArticle))
@@ -114,7 +114,7 @@ public class NotificationNewArticle implements Runnable {
                         .build());
 //                if (article != null) sendFile(newArticle, article);
             } else if (newArticle.getLoginCountRegistration() == 0) {
-                log.debug("Оповещении по заявке № {}", newArticle.getTicketNumber());
+                log.info("Оповещении по заявке № {}", newArticle.getTicketNumber());
                 bot.execute(SendMessage.builder()
                         .chatId(newArticle.getIdTelegram())
                         .text(getDefaultNotificationText(newArticle))
@@ -124,7 +124,7 @@ public class NotificationNewArticle implements Runnable {
                         .build());
             }
         } catch (TelegramApiException e) {
-            log.debug("Ошибка в отправке сообщения пользователю", e);
+            log.info("Ошибка в отправке сообщения пользователю", e);
         } finally {
             if (article != null && !newArticle.isResponsible()) sendFile(newArticle, article);
         }
