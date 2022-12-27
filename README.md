@@ -1,4 +1,8 @@
-## Integration with NisPro ver 1|0
+## Integration with OTRS ver 1|0
 ***
 ### Information for work
-> add environment variable telegram bot key - "NISPRO_bot"
+1) add environment variable telegram token bot -  " **** "
+
+2) install nodejs version v14.18.0 and then
+
+3) npm install

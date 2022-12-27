@@ -1,5 +1,6 @@
 package ru.newsystems.nispro_bot.security;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,6 +21,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private static final String LOGIN_FAILURE_URL = "/login?error";
     private static final String LOGIN_URL = "/login";
     private static final String LOGOUT_SUCCESS_URL = "/login";
+
+    @Value("${security.login}")
+    private String login;
+
+    @Value("${security.password}")
+    private String password;
 
     /**
      * Require login to access internal pages and configure login form.
@@ -54,8 +61,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     @Override
     public UserDetailsService userDetailsService() {
-        UserDetails user = User.withUsername("root")
-                .password("{noop}rootpass")
+        UserDetails user = User.withUsername(login)
+                .password("{noop}" + password)
                 .roles("USER")
                 .build();
 
