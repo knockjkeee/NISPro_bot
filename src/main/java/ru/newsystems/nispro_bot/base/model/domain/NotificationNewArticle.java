@@ -35,19 +35,19 @@ public class NotificationNewArticle implements Runnable {
     @Override
     public void run() {
         List<TelegramReceiveNotificationNewArticle> newArticles = repo.findAll();
-        log.info("Найдены новые {} записи в таблице оповещения NotificationNewArticle", newArticles.size());
+        log.info("Найдены новые записи в таблице оповещения NotificationNewArticle в количестве {} шт", newArticles.size());
         if (newArticles.size() > 0) {
             newArticles.stream().filter(i -> i.getIsVisibleForCustomer() == 1).forEach(newArticle -> {
                 try {
                     Long id = Long.parseLong(newArticle.getIdTelegram());
                     sendNotification(newArticle);
                 } catch (NumberFormatException ignored) {
-                    log.info("Ошибка в парсере id у {}", newArticle.getIdTelegram());
+                    log.info("Ошибка парсера телеграмм id - {}", newArticle.getIdTelegram());
                 }
             });
         }
         repo.deleteAll();
-        log.info("Очистка таблицы - NotificationNewArticle");
+        log.info("Очистка таблицы => NotificationNewArticle");
     }
 
     private void sendNotification(TelegramReceiveNotificationNewArticle newArticle) {
@@ -144,6 +144,7 @@ public class NotificationNewArticle implements Runnable {
             try {
                 prepareFileToSend(newArticle.getIdTelegram(), e);
             } catch (TelegramApiException ex) {
+                log.info("Ошибка передачи файла при оповещении {}", ex.getLocalizedMessage());
                 ex.printStackTrace();
             }
         });

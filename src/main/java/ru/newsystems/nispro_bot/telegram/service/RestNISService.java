@@ -188,7 +188,7 @@ public class RestNISService {
         map.add("Attachments", "1");
         map.add("DynamicFields", "1");
         if (listId != null) listId.forEach(e -> map.add("TicketID", e));
-        return new HttpEntity<>(map, getHttpHeaders(MediaType.APPLICATION_JSON));
+        return new HttpEntity<>(map, getHttpHeaders());
     }
 
     private HttpEntity<Map<String, Object>> getRequestHeaderTickerUpdate(String dynamicField, ChangeStatusDTO data,  String owner) {
@@ -223,7 +223,7 @@ public class RestNISService {
         if (state != null) ticket.put("State", state);
         map.put("Ticket", ticket);
 
-        return new HttpEntity<>(map, getHttpHeaders(MediaType.APPLICATION_JSON));
+        return new HttpEntity<>(map, getHttpHeaders());
     }
 
 
@@ -258,7 +258,7 @@ public class RestNISService {
             });
             map.put("Attachment", obj);
         }
-        return new HttpEntity<>(map, getHttpHeaders(MediaType.APPLICATION_JSON));
+        return new HttpEntity<>(map, getHttpHeaders());
     }
 
     private String getCurrentTitleFromTicket(Update update, RequestDataDTO data) {
@@ -336,13 +336,13 @@ public class RestNISService {
             });
             map.put("Attachment", obj);
         }
-        return new HttpEntity<>(map, getHttpHeaders(MediaType.APPLICATION_JSON));
+        return new HttpEntity<>(map, getHttpHeaders());
     }
 
     private HttpEntity<MultiValueMap<String, Object>> getRequestHeaderTickerSearch(List<Long> listTicketNumbers) {
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
         listTicketNumbers.forEach(e -> map.add("TicketNumber", e));
-        return new HttpEntity<>(map, getHttpHeaders(MediaType.APPLICATION_JSON));
+        return new HttpEntity<>(map, getHttpHeaders());
     }
 
     public HttpEntity<Map<String, Object>> getRequestHeaderTickerSearch() {
@@ -351,12 +351,12 @@ public class RestNISService {
         dynamicField.put("Empty", 0);
         map.put("DynamicField_Telegram", dynamicField);
         map.put("States", LIST_STATE.toArray());
-        return new HttpEntity<>(map, getHttpHeaders(MediaType.APPLICATION_JSON));
+        return new HttpEntity<>(map, getHttpHeaders());
     }
 
-    private HttpHeaders getHttpHeaders(MediaType mediaType) {
+    private HttpHeaders getHttpHeaders() {
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(mediaType);
+        headers.setContentType(MediaType.APPLICATION_JSON);
         return headers;
     }
 

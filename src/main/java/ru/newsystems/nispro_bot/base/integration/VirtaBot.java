@@ -1,5 +1,6 @@
 package ru.newsystems.nispro_bot.base.integration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -17,14 +18,20 @@ public class VirtaBot extends TelegramLongPollingBot implements Customer {
 
     List<Subscriber> subscribers = new ArrayList<>();
 
+    @Value("${bot.name}")
+    private String botName;
+
+    @Value("${bot.token}")
+    private String botToken;
+
     @Override
     public String getBotUsername() {
-        return "NISPRO_bot";
+        return botName;
     }
 
     @Override
     public String getBotToken() {
-        return System.getenv("NISPRO_bot");
+        return botToken;
     }
 
     @Override

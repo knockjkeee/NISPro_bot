@@ -1,5 +1,7 @@
 package ru.newsystems.nispro_bot.telegram.utils;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -11,7 +13,18 @@ import ru.newsystems.nispro_bot.base.model.domain.Error;
 
 import static ru.newsystems.nispro_bot.telegram.utils.Messages.prepareHelpMsg;
 
+@Component
 public class Notification {
+
+    @Value("${info.mail2}")
+    private String mail;
+
+    private static String MAIL_STATIC;
+
+    @Value("${info.mail2}")
+    public void setNameStatic(String mail){
+        Notification.MAIL_STATIC = mail;
+    }
 
     public static void resultOperationToChat(Update update, VirtaBot bot, boolean isSuccess) throws TelegramApiException {
         String text = isSuccess ? "<pre>✅ Выполнено</pre>" : "<pre>⛔️ Ошибка в запросе</pre>";
@@ -94,7 +107,7 @@ public class Notification {
     }
 
     public static void missingRegistration(Message message, VirtaBot bot) throws TelegramApiException {
-        String text = "<pre>⛔️ Регистрация отсутствует, запрос на регистрацию направить на почту info@*****.ru.</pre>";
+        String text = "<pre>⛔️ Регистрация отсутствует, запрос на регистрацию направить на почту "+ MAIL_STATIC +".</pre>";
         bot.execute(SendMessage.builder()
                 .text(text)
                 .chatId(message.getChatId().toString())
