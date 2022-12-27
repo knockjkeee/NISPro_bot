@@ -21,7 +21,6 @@ public class BaseConfig {
         restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
         return restTemplate;
     }
-
     @Bean
     public ScheduledExecutorService getExecutor() {
         return Executors.newScheduledThreadPool(20);

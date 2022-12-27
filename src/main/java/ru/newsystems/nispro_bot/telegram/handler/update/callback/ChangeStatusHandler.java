@@ -32,7 +32,6 @@ public class ChangeStatusHandler extends CallbackUpdateHandler<ChangeStatusDTO>{
         this.bot = bot;
     }
 
-
     @Override
     protected Class<ChangeStatusDTO> getDtoType() {
         return ChangeStatusDTO.class;
@@ -55,7 +54,6 @@ public class ChangeStatusHandler extends CallbackUpdateHandler<ChangeStatusDTO>{
         Optional<TicketUpdateCreateDTO> ticketUpdate;
         dto.setTelegramId(registration.getIdTelegram());
 
-
         String tgValue = ticket.getDynamicField()
                 .stream()
                 .filter(e -> e.getName().equals("Telegram"))
@@ -63,25 +61,15 @@ public class ChangeStatusHandler extends CallbackUpdateHandler<ChangeStatusDTO>{
                 .get()
                 .getValue();
 
-        log.debug("Состояние - {}", state);
-        log.debug("DTO - {} => {}", dto.getTicketId(), dto.getDirection());
+        log.info("Состояние - {}", state);
+        log.info("DTO - {} => {}", dto.getTicketId(), dto.getDirection());
 
-        switch (state) {
-            case "open":
-            case "открыта":
-                ticketUpdate = rest.getTicketOperationUpdate(update, dto, "закрыта успешно", tgValue, ticket.getOwner());
-                break;
-            case "new":
-            case "новая":
-                ticketUpdate = rest.getTicketOperationUpdate(update, dto, "открыта", tgValue, ticket.getOwner());
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + state);
-        }
+        ticketUpdate = rest.getTicketOperationUpdate(update, dto, tgValue, ticket.getOwner());
+
         if (ticketUpdate.isPresent() && ticketUpdate.get().getError() == null) {
             resultOperationToChat(update, bot, true);
         }else{
-            log.debug("Ошибка в операции смены статуса по заявке #{}", dto.getTicketId());
+            log.info("Ошибка в операции смены статуса по заявке #{}", dto.getTicketId());
             resultOperationToChat(update, bot, false);
         }
     }

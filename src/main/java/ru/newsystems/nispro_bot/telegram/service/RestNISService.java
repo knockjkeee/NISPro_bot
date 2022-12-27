@@ -1,5 +1,6 @@
 package ru.newsystems.nispro_bot.telegram.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -26,15 +27,16 @@ import java.util.stream.Collectors;
 import static ru.newsystems.nispro_bot.base.utils.NumberUtil.getIdByTicketNumber;
 
 @Service
+@Slf4j
 public class RestNISService {
 
     private final RestTemplate restTemplate;
     private final TelegramBotRegistrationService service;
+
     @Value("${nis.pro.path}")
     private String GENERICINTERFACE_PL_WEBSERVICE_TICKET;
-//    private final List<String> LIST_STATE = List.of("новая", "закрыта успешно", "открыта");
-//    private final List<String> LIST_STATE = List.of("open", "new", "новая", "закрыта успешно", "открыта");
-    private final List<String> LIST_STATE = List.of("open", "new", "новая", "открыта");
+    @Value("#{'${settings.array.state}'.split(',')}")
+    private List<String> LIST_STATE;
 
     public RestNISService(RestTemplate restTemplate, TelegramBotRegistrationService service) {
         this.restTemplate = restTemplate;
@@ -112,7 +114,7 @@ public class RestNISService {
         }
     }
 
-    public Optional<TicketUpdateCreateDTO> getTicketOperationUpdate(Update update, ChangeStatusDTO data, String state, String dynamicField, String owner) {
+    public Optional<TicketUpdateCreateDTO> getTicketOperationUpdate(Update update, ChangeStatusDTO data, String dynamicField, String owner) {
         Long msgId = update.getCallbackQuery().getMessage().getChatId();
         TelegramBotRegistration registration = registration(msgId);
         if (registration.getCompany() == null) {
@@ -124,7 +126,7 @@ public class RestNISService {
         }
         String urlUpdate = getUrl("TicketUpdate?" + (registration.isCustomerLogin() ? "CustomerUserLogin=" : "UserLogin="), registration);
 
-        HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerUpdate(dynamicField, data, state, data.getDirection(), owner);
+        HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerUpdate(dynamicField, data, owner);
         ResponseEntity<TicketUpdateCreateDTO> response =
                 restTemplate.exchange(urlUpdate, HttpMethod.POST, requestEntity, TicketUpdateCreateDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
@@ -133,7 +135,6 @@ public class RestNISService {
             return Optional.empty();
         }
     }
-
 
     public Optional<TicketUpdateCreateDTO> getTicketOperationCreate(Update update, RequestDataDTO data, TelegramBotRegistration regGroup) {
         String userName = update.getMessage().getFrom().getFirstName() + "/" + update.getMessage().getFrom().getUserName();
@@ -172,8 +173,7 @@ public class RestNISService {
 
         String url = getUrl("TicketSearch?" + (registration.isCustomerLogin() ? "CustomerUserLogin=" : "UserLogin="), registration);
         HttpEntity<Map<String, Object>> requestEntity = getRequestHeaderTickerSearch();
-        ResponseEntity<TicketSearchDTO> response =
-                restTemplate.exchange(url, HttpMethod.POST, requestEntity, TicketSearchDTO.class);
+        ResponseEntity<TicketSearchDTO> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, TicketSearchDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
             return Optional.ofNullable(response.getBody());
         } else {
@@ -191,12 +191,11 @@ public class RestNISService {
         return new HttpEntity<>(map, getHttpHeaders(MediaType.APPLICATION_JSON));
     }
 
-    private HttpEntity<Map<String, Object>> getRequestHeaderTickerUpdate(String dynamicField, ChangeStatusDTO data, String state, String direction, String owner) {
+    private HttpEntity<Map<String, Object>> getRequestHeaderTickerUpdate(String dynamicField, ChangeStatusDTO data,  String owner) {
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> ticket = new HashMap<>();
 
         map.put("TicketNumber",data.getTicketId());
-        ticket.put("State", state);
 
         List<Object> dynamic = new ArrayList<>();
         Map<String, Object> dynamic_field = new HashMap<>();
@@ -208,12 +207,20 @@ public class RestNISService {
             map.put("DynamicField", dynamic);
         }
 
-        switch (direction){
-            case "b":
-            case "c":
+        String state = null;
+        switch (data.getDirection()) {
+            case "a" -> state = "открыта";
+            case "b" -> {
+                state = "новая";
                 ticket.put("Responsible", owner);
-                break;
+            }
+            case "c" -> {
+                state = "закрыта успешно";
+                ticket.put("Responsible", owner);
+            }
         }
+
+        if (state != null) ticket.put("State", state);
         map.put("Ticket", ticket);
 
         return new HttpEntity<>(map, getHttpHeaders(MediaType.APPLICATION_JSON));
@@ -281,11 +288,7 @@ public class RestNISService {
         String title = !StringUtil.isBlank(data.getTitle()) ?
                 data.getTitle() + " [автор: " + userName + "]." :
                 data.getArticle().getBody() + " [автор: " + userName + "].";
-        //"Тикет создан с помощью telegram bot [автор: " + userName + "].");
-
-//        ticket.put("Queue", registration.getQueueName());
         ticket.put("Priority", "3 normal");
-//        ticket.put("CustomerUser", registration.getCustomerUser());
         ticket.put("Title", title);
         ticket.put("State", "open");
         ticket.put("Type", "Unclassified");
@@ -314,7 +317,6 @@ public class RestNISService {
         map.put("DynamicField", dynamic);
 
         article.put("ContentType", "text/plain; charset=utf8");
-//        article.put("Subject", "Комментарий добавлен с помощью telegram bot [автор: " + userName + "].");
         if (titleTicket.isEmpty()) {
             article.put("Subject", title);
         }else {
@@ -346,7 +348,6 @@ public class RestNISService {
     public HttpEntity<Map<String, Object>> getRequestHeaderTickerSearch() {
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> dynamicField = new HashMap<>();
-//        if (LIST_STATE != null) LIST_STATE.forEach(e -> map.put("States", e));
         dynamicField.put("Empty", 0);
         map.put("DynamicField_Telegram", dynamicField);
         map.put("States", LIST_STATE.toArray());

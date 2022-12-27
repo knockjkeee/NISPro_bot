@@ -96,7 +96,7 @@ public class Button {
                 buttons.add(List.of(
                         InlineKeyboardButton.builder()
                                 .text(ReplyKeyboardButton.COMMENT.getLabel() + " Принять в работу")
-                                .callbackData(StringUtil.serialize(new ChangeStatusDTO(ticket.getTicketNumber(), "p", null)))
+                                .callbackData(StringUtil.serialize(new ChangeStatusDTO(ticket.getTicketNumber(), "a", null)))
                                 .build(),
                         InlineKeyboardButton.builder()
                                 .text(ReplyKeyboardButton.SEND_CLOSE.getLabel() + " Закрыть")
