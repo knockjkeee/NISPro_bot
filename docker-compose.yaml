@@ -1,0 +1,12 @@
+version: "3.9"
+name: telegram_nis_pro
+
+services:
+  telegram:
+    environment:
+      - DOCKER_DEFAULT_PLATFORM=linux/amd64
+#    image: knockjkeee/test:telegram_lates
+    image: knockjkeee/test:telegram_kvedr
+    container_name: telegram_bot
+    ports:
+      - "8008:8008"

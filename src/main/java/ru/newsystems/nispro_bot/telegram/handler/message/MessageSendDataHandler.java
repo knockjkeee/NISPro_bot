@@ -1,5 +1,6 @@
 package ru.newsystems.nispro_bot.telegram.handler.message;
 
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
@@ -29,6 +30,7 @@ import static ru.newsystems.nispro_bot.telegram.utils.FormattedData.*;
 import static ru.newsystems.nispro_bot.telegram.utils.Notification.resultOperationToChat;
 
 
+@Log4j2
 @Component
 public class MessageSendDataHandler implements MessageHandler {
 
@@ -52,36 +54,40 @@ public class MessageSendDataHandler implements MessageHandler {
     public boolean handleUpdate(Update update, boolean isRedirect) throws TelegramApiException {
 
         boolean isReplyText = update.getMessage().getReplyToMessage() != null;
-        List<String> replyTexts = isReplyText ? splitMessageText(update.getMessage().getReplyToMessage().getText(), "№") : Collections.emptyList();
-            boolean isSendComment = isReplyText && replyTexts.get(0).contains(MessageState.SENDCOMMENT.getName());
-            boolean isCreateTicket = isReplyText && replyTexts.get(0).contains(MessageState.CREATETICKET.getName());
-            User isForward = update.getMessage().getForwardFrom();
-            if (isSendComment || isCreateTicket || isRedirect) {
-                User forwardUser = update.getMessage().getForwardFrom();
-                if (update.getMessage().hasText()) {
-                    if (isRedirect) {
-                        if (isForward == null) {
-                            prepareMsg(update, replyTexts, isSendComment, true, forwardUser, registrationService);
-                            return true;
-                        } else {
-                            prepareAddMsg(update, true, forwardUser);
-                            return true;
-                        }
+        List<String> replyTexts = isReplyText ? splitMessageText(update.getMessage().getReplyToMessage().getText(),
+                "№") : Collections.emptyList();
+        boolean isSendComment = isReplyText && replyTexts.get(0).contains(MessageState.SENDCOMMENT.getName());
+        boolean isCreateTicket = isReplyText && replyTexts.get(0).contains(MessageState.CREATETICKET.getName());
+        User isForward = update.getMessage().getForwardFrom();
+        String forward = update.getMessage().getForwardSenderName();
+        log.info("====>>>" + forward);
+        log.info("====>>>" + isForward);
+        if (isSendComment || isCreateTicket || isRedirect) {
+            User forwardUser = update.getMessage().getForwardFrom();
+            if (update.getMessage().hasText()) {
+                if (isRedirect) {
+                    if (isForward == null) {
+                        prepareMsg(update, replyTexts, isSendComment, true, forwardUser, registrationService);
+                        return true;
                     } else {
-                        prepareMsg(update, replyTexts, isSendComment, false, forwardUser, registrationService);
+                        prepareAddMsg(update, true, forwardUser);
                         return true;
                     }
-                }
-                if (update.getMessage().hasPhoto()) {
-                    return preparePhoto(update, replyTexts, isSendComment, isRedirect, forwardUser, registrationService);
-                }
-                if (update.getMessage().hasDocument()) {
-                    if (prepareDocument(update, replyTexts, isSendComment, isRedirect, forwardUser)) return true;
+                } else {
+                    prepareMsg(update, replyTexts, isSendComment, false, forwardUser, registrationService);
                     return true;
                 }
-                return false;
+            }
+            if (update.getMessage().hasPhoto()) {
+                return preparePhoto(update, replyTexts, isSendComment, isRedirect, forwardUser, registrationService);
+            }
+            if (update.getMessage().hasDocument()) {
+                if (prepareDocument(update, replyTexts, isSendComment, isRedirect, forwardUser)) return true;
+                return true;
             }
             return false;
+        }
+        return false;
 //        }
 //        return false;
     }
@@ -89,13 +95,21 @@ public class MessageSendDataHandler implements MessageHandler {
     private boolean prepareDocument(Update update, List<String> replyTexts, boolean isSendComment, boolean isRedirect, User forwardUser) throws TelegramApiException {
         SendDataDTO sendDataDTO = localRepo.get(update.getMessage().getChatId());
         if (sendDataDTO != null && !sendDataDTO.getSchedule().isDone()) {
-            prepareDataWithUpdateSchedule(update, sendDataDTO, prepareAttachmentFromDocument(update, bot), isRedirect, forwardUser);
+            prepareDataWithUpdateSchedule(update,
+                    sendDataDTO,
+                    prepareAttachmentFromDocument(update, bot),
+                    isRedirect,
+                    forwardUser);
             return true;
         }
-        RequestDataDTO req = prepareReqWithDocument(update, replyTexts, update.getMessage().getCaption(), bot, isRedirect);
+        RequestDataDTO req = prepareReqWithDocument(update,
+                replyTexts,
+                update.getMessage().getCaption(),
+                bot,
+                isRedirect);
         if (isSendComment) {
             sendNewComment(update, req, restNISService, bot);
-        }else{
+        } else {
             sendCreateTicket(update, req, restNISService, bot, null);
         }
         return false;
@@ -111,18 +125,26 @@ public class MessageSendDataHandler implements MessageHandler {
     private boolean preparePhoto(Update update, List<String> replyTexts, boolean isSendComment, boolean isRedirect, User forwardUser, TelegramBotRegistrationService registrationService) throws TelegramApiException {
         SendDataDTO sendDataDTO = localRepo.get(update.getMessage().getChatId());
         if (sendDataDTO != null && !sendDataDTO.getSchedule().isDone()) {
-            prepareDataWithUpdateSchedule(update, sendDataDTO, prepareAttachmentFromPhoto(update, bot), isRedirect, forwardUser);
+            prepareDataWithUpdateSchedule(update,
+                    sendDataDTO,
+                    prepareAttachmentFromPhoto(update, bot),
+                    isRedirect,
+                    forwardUser);
             return true;
         } else {
-            RequestDataDTO req = prepareReqWithPhoto(update, replyTexts, update.getMessage().getCaption(), bot, isRedirect);
-            if ((sendDataDTO == null || sendDataDTO.getSchedule().isDone())
-                    && update.getMessage().getMediaGroupId() != null) {
+            RequestDataDTO req = prepareReqWithPhoto(update,
+                    replyTexts,
+                    update.getMessage().getCaption(),
+                    bot,
+                    isRedirect);
+            if ((sendDataDTO == null || sendDataDTO.getSchedule().isDone()) &&
+                update.getMessage().getMediaGroupId() != null) {
                 prepareTaskForExecutor(update, req, isSendComment, isRedirect, forwardUser, registrationService);
                 return true;
             }
             if (isSendComment) {
                 sendNewComment(update, req, restNISService, bot);
-            }else{
+            } else {
                 sendCreateTicket(update, req, restNISService, bot, null);
             }
             return true;
@@ -140,7 +162,12 @@ public class MessageSendDataHandler implements MessageHandler {
         updateTaskForExecutor(update, sendDataDTO, task, attachment, isRedirect, forwardUser);
     }
 
-    private void updateTaskForExecutor(Update update, SendDataDTO sendDataDTO, SendOperationTask task, Attachment attachment, boolean isRedirect, User forwardUser) {
+    private void updateTaskForExecutor(Update update,
+                                       SendDataDTO sendDataDTO,
+                                       SendOperationTask task,
+                                       Attachment attachment,
+                                       boolean isRedirect,
+                                       User forwardUser) {
         if (attachment != null) {
             task.updateAttachment(attachment);
         }
@@ -166,7 +193,8 @@ public class MessageSendDataHandler implements MessageHandler {
     }
 
     private void prepareTaskForExecutor(Update update, RequestDataDTO req, boolean isSendComment, boolean isRedirect, User forwardUser, TelegramBotRegistrationService registrationService) {
-        SendOperationTask task = SendOperationTask.builder()
+        SendOperationTask task = SendOperationTask
+                .builder()
                 .req(req)
                 .update(update)
                 .bot(bot)

@@ -96,9 +96,9 @@ public class NotificationNewArticle implements Runnable {
                 log.info("Смена ответственного по заявке № {}", newArticle.getTicketNumber());
                 bot.execute(SendMessage.builder()
                         .chatId(newArticle.getIdTelegram())
-                        .text("<pre>❗ На Вас назначили новую задачу" +
-                                "\nЗаявка № " + mainTicket.getTicketNumber() + "</pre>" +
-                                "\n<pre>От: " +  mainTicket.getOwner() + "</pre>" +
+                        .text("<b>❗ На Вас назначили новую задачу" +
+                                "\nЗаявка № " + mainTicket.getTicketNumber() + "</b>" +
+                                "\n<b>От: " +  mainTicket.getOwner() + "</b>" +
                                 "\n<b>Тема: </b><i>" + mainTicket.getTitle()+ "</i>")
                         .parseMode(ParseMode.HTML)
                         .protectContent(true)
@@ -131,9 +131,9 @@ public class NotificationNewArticle implements Runnable {
     }
 
     private String getDefaultNotificationText(TelegramReceiveNotificationNewArticle newArticle) {
-        return "<pre>✉️ Новое сообщение " + "" +
-                "\nЗаявка № " + newArticle.getTicketNumber() + "</pre>" + "" +
-                "\n<pre>От: " + newArticle.getCreateBy() + "</pre>" + "" +
+        return "<b>✉️ Новое сообщение " + "" +
+                "\nЗаявка № " + newArticle.getTicketNumber() + "</b>" + "" +
+                "\n<b>От: " + newArticle.getCreateBy() + "</b>" + "" +
                 "\n<b>Тема: </b><i>" + newArticle.getSubject() + "</i>" +
                 "\n<b>Сообщение: </b><i>" + newArticle.getBody() + "</i>";
     }

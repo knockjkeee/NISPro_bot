@@ -31,18 +31,18 @@ public class MyIDCommandHandler implements CommandHandler {
             txt = "\nId группы: " + message.getChatId();
             ArrayList<ChatMember> execute =
                     bot.execute(GetChatAdministrators.builder().chatId(String.valueOf(message.getChatId())).build());
-            String membersGroup = "<pre>Участники группы от компании " + registration.getCompany() + ":</pre>\n" +
+            String membersGroup = "<b>Участники группы от компании " + registration.getCompany() + ":</b>\n" +
                     execute.stream()
                             .map(e -> e.getUser().getFirstName() + " " + e.getUser().getLastName() + ", isBot: " +
                                     e.getUser().getIsBot() + ", id: " + e.getUser().getId())
-                            .collect(Collectors.joining("\n")) + "\n<pre>Данные для регистрации:</pre>\n" +
+                            .collect(Collectors.joining("\n")) + "\n<b>Данные для регистрации:</b>\n" +
                     execute.stream().map(e -> String.valueOf(e.getUser().getId())).collect(Collectors.joining(";")) +
                     txt;
             bot.execute(SendMessage.builder().chatId(chatId).parseMode("html").text(membersGroup).build());
             return;
         } else {
             chatId = message.getChatId().toString();
-            txt = "<pre>Ваш id : " + message.getChatId() + "</pre>";
+            txt = "<b>Ваш id : " + message.getChatId() + "</b>";
         }
         bot.execute(SendMessage.builder().chatId(chatId).parseMode("html").text(txt).build());
     }

@@ -24,7 +24,7 @@ public class CreateTicketCommandHandler implements CommandHandler {
     public void handleCommand(Message message, String text, TelegramBotRegistration registration) throws TelegramApiException {
         bot.execute(SendMessage
                 .builder()
-                .text("<pre>" + MessageState.CREATETICKET.getName() + "</pre>")
+                .text("<b>" + MessageState.CREATETICKET.getName() + "</b>")
                 .chatId(String.valueOf(message.getChatId()))
                 .parseMode(ParseMode.HTML)
                 .replyMarkup(ForceReplyKeyboard.builder().forceReply(true).build())

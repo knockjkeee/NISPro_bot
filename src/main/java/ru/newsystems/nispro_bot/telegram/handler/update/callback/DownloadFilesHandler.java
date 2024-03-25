@@ -90,7 +90,7 @@ public class DownloadFilesHandler extends CallbackUpdateHandler<DownloadFilesDTO
         }
 
         if (attachments == null) {
-            String text = "<pre>⛔️ Файлы для скачивания отсутствуют в последнем комментарии.</pre>";
+            String text = "<b>⛔️ Файлы для скачивания отсутствуют в последнем комментарии.</b>";
             bot.execute(SendMessage
                     .builder()
                     .text(text)

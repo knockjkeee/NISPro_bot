@@ -66,7 +66,7 @@ public class MyTicketsCommandHandler implements CommandHandler {
 
                 bot.execute(SendMessage.builder()
                         .chatId(String.valueOf(message.getChatId()))
-                        .text("<pre>Количество открытых заявок: <b>" + ticketIDs.size() + "</b></pre>")
+                        .text("<b>Количество открытых заявок: <b>" + ticketIDs.size() + "</b></b>")
                         .parseMode(ParseMode.HTML)
                         .protectContent(true)
                         .replyToMessageId(message.getMessageId())

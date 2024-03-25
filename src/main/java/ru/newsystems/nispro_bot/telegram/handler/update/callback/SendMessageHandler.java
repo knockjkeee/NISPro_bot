@@ -33,7 +33,7 @@ public class SendMessageHandler extends CallbackUpdateHandler<SendDataDTO> {
 
   @Override
   protected void handleCallback(Update update, SendDataDTO dto, TelegramBotRegistration registration) throws TelegramApiException {
-    String text = "<pre>" + MessageState.SENDCOMMENT.getName() + " по заявке №" + dto.getTicketId() + "</pre>";
+    String text = "<b>" + MessageState.SENDCOMMENT.getName() + " по заявке №" + dto.getTicketId() + "</b>";
     bot.execute(
             SendMessage.builder()
                     .text(text)

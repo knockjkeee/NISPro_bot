@@ -59,7 +59,7 @@ public class TicketsHomeViewHandler extends CallbackUpdateHandler<TicketsHomeVie
                     .builder()
                     .chatId(String.valueOf(update.getCallbackQuery().getMessage().getChatId()))
                     .messageId(update.getCallbackQuery().getMessage().getMessageId())
-                    .text("<pre>Количество открытых заявок: <b>" + ticket.getTickets().size() + "</b></pre>")
+                    .text("<b>Количество открытых заявок: <b>" + ticket.getTickets().size() + "</b></b>")
                     .parseMode(ParseMode.HTML)
                     .build());
             editedInlineKeyboard(update, InlineKeyboardMarkup.builder().keyboard(inlineKeyboard), bot);

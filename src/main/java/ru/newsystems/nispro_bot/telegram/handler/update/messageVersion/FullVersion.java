@@ -171,7 +171,7 @@ public class FullVersion implements Version {
         String countTMsgText = ticketText + "\n<i>Количество комментариев:</i> " + ticket.getArticles().size();
         Article lastArticle = ticket.getArticles().get(ticket.getArticles().size() - 1);
         int sizeAttach = lastArticle.getAttachments() == null ? 0 : lastArticle.getAttachments().size();
-        String lastComment = countTMsgText + "\n\n<pre>Последний комментарий:</pre>";
+        String lastComment = countTMsgText + "\n\n<b>Последний комментарий:</b>";
         return prepareTextArticle(lastArticle, sizeAttach, lastComment);
     }
 

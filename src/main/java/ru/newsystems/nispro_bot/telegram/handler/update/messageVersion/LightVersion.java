@@ -28,15 +28,15 @@ public class LightVersion implements Version {
         boolean isRedirect = update.getMessage().getForwardFrom() != null;
         if (update.getMessage().getChatId() > 0) {
             for (MessageHandler messageHandler : messageHandlers) {
-            try {
-                if (messageHandler.handleUpdate(update, isRedirect)) {
-                    return true;
+                try {
+                    if (messageHandler.handleUpdate(update, isRedirect)) {
+                        return true;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
-        }
-        return false;
+            return false;
         }
         return true;
     }

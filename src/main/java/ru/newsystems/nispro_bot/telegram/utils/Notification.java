@@ -27,7 +27,7 @@ public class Notification {
     }
 
     public static void resultOperationToChat(Update update, VirtaBot bot, boolean isSuccess) throws TelegramApiException {
-        String text = isSuccess ? "<pre>✅ Выполнено</pre>" : "<pre>⛔️ Ошибка в запросе</pre>";
+        String text = isSuccess ? "<b>✅ Выполнено</b>" : "<b>⛔️ Ошибка в запросе</b>";
         if (update.hasCallbackQuery()) {
             bot.execute(SendMessage.builder()
                     .text(text)
@@ -46,7 +46,7 @@ public class Notification {
     }
 
     public static void resultOperationToChat(Message message, VirtaBot bot, boolean isSuccess) throws TelegramApiException {
-        String text = isSuccess ? "<pre>✅ Выполнено</pre>" : "<pre>❎ Открытых заявок нет</pre>";
+        String text = isSuccess ? "<b>✅ Выполнено</b>" : "<b>❎ Открытых заявок нет</b>";
         bot.execute(SendMessage.builder()
                 .text(text)
                 .replyToMessageId(message.getMessageId())
@@ -57,7 +57,7 @@ public class Notification {
 
     public static void receiveReqNum(Update update, VirtaBot bot, Long reqNum) throws TelegramApiException {
         bot.execute(SendMessage.builder()
-                .text("<pre>Номер созданной заявки: " + reqNum + "</pre>")
+                .text("<b>Номер созданной заявки: " + reqNum + "</b>")
                 .replyToMessageId(update.getMessage().getMessageId())
                 .chatId(update.getMessage().getChatId().toString())
                 .parseMode(ParseMode.HTML)
@@ -66,7 +66,7 @@ public class Notification {
 
     public static void sendErrorMsg(VirtaBot bot, Update update, String text, Error error) throws TelegramApiException {
         String resultText =
-                "❗️❗❗ \n<pre>ErrorCode:</pre>" + error.getErrorCode() + "" + "\n<pre>ErrorMessage%</pre>" +
+                "❗️❗❗ \n<b>ErrorCode:</b>" + error.getErrorCode() + "" + "\n<b>ErrorMessage%</b>" +
                         error.getErrorMessage() + "" + "\nby text: " + text;
         if (update.hasCallbackQuery()) {
             bot.execute(SendMessage.builder()
@@ -89,7 +89,7 @@ public class Notification {
         bot.execute(EditMessageText.builder()
                 .chatId(String.valueOf(update.getCallbackQuery().getMessage().getChatId()))
                 .messageId(update.getCallbackQuery().getMessage().getMessageId())
-                .text("<pre>Запрос закрыт по таймауту, для возобновления работы воспользуйтесь командой /my_ticket</pre>")
+                .text("<b>Запрос закрыт по таймауту, для возобновления работы воспользуйтесь командой /my_ticket</b>")
                 .parseMode(ParseMode.HTML)
                 .build());
     }
@@ -107,7 +107,7 @@ public class Notification {
     }
 
     public static void missingRegistration(Message message, VirtaBot bot) throws TelegramApiException {
-        String text = "<pre>⛔️ Регистрация отсутствует, запрос на регистрацию направить на почту "+ MAIL_STATIC +".</pre>";
+        String text = "<b>⛔️ Регистрация отсутствует, запрос на регистрацию направить на почту "+ MAIL_STATIC +".</b>";
         bot.execute(SendMessage.builder()
                 .text(text)
                 .chatId(message.getChatId().toString())

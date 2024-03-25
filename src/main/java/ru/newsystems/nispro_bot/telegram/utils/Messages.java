@@ -15,7 +15,10 @@ public class Messages {
 
     public static String prepareTextTicket(TicketJ ticket) {
         String formatDateTime = getDateTimeFormat(ticket.getCreated());
-        return "<pre>Результат поиска:</pre>"
+        return "<b>Результат поиска:</b>"
+               + "\nId <i>"
+               + ticket.getTicketID()
+               + "</i>"
                 + "\n№ <i>"
                 + ticket.getTicketNumber()
                 + "</i>"
@@ -57,12 +60,12 @@ public class Messages {
                 .size();
         int sizeAttach = article.getAttachments() == null ? 0 : article.getAttachments().size();
         String lastComment = countTMsgText
-                + "\n\n<pre>Комментарий №"
+                + "\n\n<b>Комментарий №"
                 + page
                 + " (id "
                 + article.getArticleID()
                 + ")"
-                + ":</pre>";
+                + ":</b>";
         return prepareTextArticle(article, sizeAttach, lastComment);
     }
 
@@ -72,7 +75,7 @@ public class Messages {
                 .getArticles()
                 .size() + "\n";
         String comments = article.stream().map(e -> {
-            return "\n<pre>Комментарий №" + e.getArticleID() + " от " + e.getFrom().replaceAll("<", "").replaceAll(">", "") + "</pre>" + "\n >>> " +
+            return "\n<b>Комментарий №" + e.getArticleID() + " от " + e.getFrom().replaceAll("<", "").replaceAll(">", "") + "</b>" + "\n >>> " +
                     e.getBody().replaceAll("[\n\r]$", "");
         }).collect(Collectors.joining("\n"));
 
@@ -85,7 +88,7 @@ public class Messages {
 
     public static String prepareHelpMsg() {
         return """
-                <pre>Рекомендации для работы</pre><i>Существующий функционал:</i>
+                <b>Рекомендации для работы</b><i>Существующий функционал:</i>
 
                 1 Быстрый поиск - Для быстрого поиска Вам необходимо сообщить боту № Заявки. Это числовое значение из 15 символов. В результате бот продемонстрирует детализированный контекст искомой заявок с прикрепленным последним комментарием. Из Функций Вам будет доступно:
                     * Добавить комментарий

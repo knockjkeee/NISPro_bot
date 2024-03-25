@@ -42,7 +42,7 @@ public class AboutCommandHandler implements CommandHandler {
         bot.execute(SendMessage.builder()
                 .chatId(message.getChatId().toString())
                 .parseMode(ParseMode.HTML)
-                .text(  "<pre>Контактная информация:</pre>" +
+                .text(  "<b>Контактная информация:</b>" +
                         "\nАдрес: " + address +
                         "\nТелефон: " + mobile +
                         "\nСайт: " + site +
