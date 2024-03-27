@@ -81,9 +81,9 @@ public class FullVersion implements Version {
                 if (prepareFunctionalMsg(update, isRedirect)) return true;
             }
             if (checkInnerAttrFiles(update, ticketSearch)) return false;
-            TelegramBotRegistration byAgentIdTelegram = service.getByAgentIdTelegram(String.valueOf(update.getMessage()
+            boolean isExist = service.getByAgentIdTelegram(String.valueOf(update.getMessage()
                     .getChatId()));
-            if (byAgentIdTelegram.getId() == null) {
+            if (!isExist) {
                 sendExceptionMsg(update, text, "tk", bot);
             } else {
                 if (prepareFunctionalMsg(update, true)) return true;
