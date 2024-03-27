@@ -45,6 +45,6 @@ security:
 
 bot:
   name: NISPRO_bot
-  token: 5411694794:AAFG6UZ29Z9atazdRIKoMa_kPG93tm0mQhM
+  token:
 
 #  -Drun.jvmArguments="-Dfile.encoding=UTF-8" -Xverify:none
